@@ -73,7 +73,8 @@ crashlytics-build.properties
 
 #VRC gitignore
 
-/[Pp]ackages/*
+/Packages/*
+/Thry/*
 
 #Personal working folders
 /GitIgnore/*

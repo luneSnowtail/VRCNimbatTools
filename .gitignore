@@ -72,8 +72,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 #VRC gitignore
-/*/
-!com.vrchat.core.*/
 
 /[Pp]ackages/*
 

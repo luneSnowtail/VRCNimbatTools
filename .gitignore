@@ -71,6 +71,12 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
+#VRC gitignore
+/*/
+!com.vrchat.core.*/
+
+/[Pp]ackages/*
+
 #Personal working folders
 /GitIgnore/*
 /[Aa]ssets/GitIgnore/*

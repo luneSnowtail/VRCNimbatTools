@@ -16,13 +16,13 @@ public class Nimbat_SelectionData
     static public bool selectionHasMirrorSuffix;        //regardles if mirror is set correctly or exists, the selected object has _L or _R suffix
 
     static public NimbatVRCObjectBase selectedVRCNimbatObject;
-
     static public NimbatMirrorObject nimbatMirrorData;
-
 
     static ContactBase selectedContact;
     static VRCPhysBoneBase physBone;
     static GameObject _activeSelectedGameObject;
+
+    static bool isPrefab;
 
     static public GameObject activeSelectedGameobject
     {
@@ -34,6 +34,8 @@ public class Nimbat_SelectionData
         {
             if (value)
             {
+                isPrefab = NimbatFunctions.IsPrefab(value);
+
                 //--first we search for a contact component
                 selectedContact = value.GetComponent<ContactBase>();
                 physBone = value.GetComponent<VRCPhysBoneBase>();
@@ -69,7 +71,8 @@ public class Nimbat_SelectionData
                 selectedVRCNimbatObject.ClearData();
 
                 nimbatMirrorData = null;
-                selectionHasMirrorSuffix = false;                
+                selectionHasMirrorSuffix = false;
+                isPrefab = false;
             }
 
             _activeSelectedGameObject = value;

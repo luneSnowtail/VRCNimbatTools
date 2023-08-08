@@ -18,8 +18,17 @@ public class NimbatPhysBoneDrawer
 
     static public float normalizedSegmentDistance;
 
+
+
     static public void UpdateChain(Transform targetTransform)
     {
+        if (!targetTransform)
+        {
+            physBoneTransform = new List<Transform>();
+            physBoneSegments = new List<NimbatPhysBoneSegment>();
+            return;
+        }
+
         if(targetTransform.childCount > 1)
         {
             targetTransform = targetTransform.GetChild(0);
@@ -82,8 +91,17 @@ public class NimbatPhysBoneDrawer
         normalizedScale = physBone_Lenght / 1;
     }
     
+    /// <summary>
+    /// it receives a normalized float (0 to 1) and it returns the 3d position of where that is located
+    /// in the physbone chain 
+    /// </summary>    
     static public Vector3 GetPosition(float normalizedRange)
     {
+        if(physBoneSegments.Count <= 0)
+        {
+            return Vector3.zero;
+        }
+
         normalizedRange = Mathf.Clamp01(normalizedRange);
 
         if(normalizedRange <= 0)
@@ -113,8 +131,12 @@ public class NimbatPhysBoneDrawer
 
     static public float GetAbsoluteScale(float normalizedRange)
     {
-        
-        if(normalizedRange == 0)
+        if (physBoneSegments.Count <= 0)
+        {
+            return 1;
+        }
+
+        if (normalizedRange == 0)
         {
             return NimbatFunctions.GetAbsoluteScale(physBoneSegments[0].segmentStart.gameObject);
         }
@@ -132,7 +154,12 @@ public class NimbatPhysBoneDrawer
 
 
     static public Vector3 GetForwardDirectionAtPosition(float normalizedRange)
-    {        
+    {
+        if (physBoneSegments.Count <= 0)
+        {
+            return Vector3.zero;
+        }
+
         for (int i = 0; i < physBoneSegments.Count; i++)
         {
             if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
@@ -146,6 +173,11 @@ public class NimbatPhysBoneDrawer
 
     static public Vector3 GetRotationAxisAtPosition(float normalizedRange)
     {
+        if (physBoneSegments.Count <= 0)
+        {
+            return Vector3.zero;
+        }
+
         for (int i = 0; i < physBoneSegments.Count; i++)
         {
             if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
@@ -160,6 +192,11 @@ public class NimbatPhysBoneDrawer
 
     static public Vector3 GetUpAxisAtPosition(float normalizedRange)
     {
+        if (physBoneSegments.Count <= 0)
+        {
+            return Vector3.zero;
+        }
+
         for (int i = 0; i < physBoneSegments.Count; i++)
         {
             if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
@@ -174,6 +211,11 @@ public class NimbatPhysBoneDrawer
 
     static public Vector3 TransformDirectionAtCurvePoint(Vector3 direction, float normalizedRange)
     {
+        if (physBoneSegments.Count <= 0)
+        {
+            return Vector3.zero;
+        }
+
         for (int i = 0; i < physBoneSegments.Count; i++)
         {
             if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
@@ -208,8 +250,13 @@ public class NimbatPhysBoneDrawer
         Handles.color = defaultColor;
     }
     static public void DrawDebugDistanceLabels()
-    {        
-        for( int i = 0; i < physBoneTransform.Count; i++)
+    {
+        if (physBoneTransform.Count <= 0)
+        {
+            return;
+        }
+
+        for ( int i = 0; i < physBoneTransform.Count; i++)
         {            
             Handles.Label(GetPosition(segmentNormalizedDistance * i) + (Vector3.up * .04f), (segmentNormalizedDistance * i).ToString());
         }

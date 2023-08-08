@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using VRC.Dynamics;
 
-public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
+public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
 {
     static VRCPhysBoneBase activePhysbone;    
     
@@ -57,7 +57,9 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
     static float dotProduct;
     static float editedPositionDistance;
 
-    public Nimbat_PhysboneOptions()
+    #region ======================================== Constructor and destructor
+
+    public Nimbat_PhysboneEditor()
     {
         title = "Physbone";
         drawModes = CutieInspectorDrawModes.DropUp;
@@ -67,10 +69,12 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         Nimbat_SelectionData.OnSelectionChanged += OnSelectionChanged;
     }
 
-    ~Nimbat_PhysboneOptions()
+    ~Nimbat_PhysboneEditor()
     {
         Nimbat_SelectionData.OnSelectionChanged -= OnSelectionChanged;
     }
+
+    #endregion
 
     void OnSelectionChanged()
     {
@@ -82,11 +86,26 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
             NimbatPhysBoneDrawer.UpdateChain(activePhysbone.rootTransform);
             tempCurve = activePhysbone.radiusCurve;
             SelectKeyframeByID(0);
+
+            NimbatCore.overrideDelKey = true;
+        }
+        else
+        {
+            NimbatCore.overrideDelKey = false;
         }
     }
 
     public override void CutieInspectorContent()
     {
+
+        if (!activePhysbone.rootTransform)
+        {
+
+            GUILayout.Label("no root bone set for this physbone");
+            GUILayout.Label("------ ");
+            return;
+        }
+
         /*
         GUILayout.Label("Physbone lenght " + physBone_lenght, EditorStyles.miniLabel);
         GUILayout.Label("Physbone radius " + physBone_radius, EditorStyles.miniLabel);
@@ -120,11 +139,67 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         GUILayout.Label("key time " + selectedKey.time);
         GUILayout.Label("key value " + selectedKey.value);
 
-        GUILayout.Label("new value distance " + editedPositionDistance.ToString());
+        GUILayout.Label("new value distance " + editedPositionDistance.ToString());        
+    }
 
-        
+    public override void CutieInspectorHandles()
+    {        
+        //--for some reason, if i dont draw this handle first, nothing else works
+        //Dan said this line is very important, this is not a meme or a joke     
+        Handles.Label(Vector3.zero, "");
 
+        if (!activePhysbone.rootTransform)
+        {
+            return;
+        }
 
+        if (activePhysbone.radiusCurve == null || activePhysbone.radiusCurve.length <= 0)
+        {
+            SetupCurveDefaultKeyframes();            
+            return;
+        }
+
+        tempCurve = activePhysbone.radiusCurve;
+
+        NimbatPhysBoneDrawer.DrawDebugDistanceLabels();
+
+        if (NimbatCore.ctrlDown)
+        {
+            DrawAddKeyHandles();
+            DrawEditRadiusHandle();
+        }
+        else
+        {
+            for (int i = 0; i < tempCurve.keys.Length; i++)
+        {        
+            if (i == selectedKeyID)
+            {
+                if (NimbatCore.delDown && NimbatCore.keyEventType == EventType.KeyDown)
+                {
+                    tempCurve.RemoveKey(i);
+                    
+                    activePhysbone.radiusCurve = tempCurve;
+
+                    SelectKeyframeByID(0);                    
+                }
+
+                continue;
+            }
+
+            float keyValue = tempCurve.keys[i].value;
+            Vector3 keyPosition = NimbatPhysBoneDrawer.GetPosition(tempCurve.keys[i].time);
+            float radiusScale = (NimbatPhysBoneDrawer.GetAbsoluteScale(tempCurve.keys[i].time) * keyValue) * activePhysbone.radius;            
+
+            //--we selected a new keyframe
+            if (NimbatPhysBoneDrawer.DrawCurveKeyPoint(keyPosition, radiusScale))
+            {
+                selectedKeyID = i;
+                SelectKeyframeByID(i);
+            }
+
+        }
+            DrawKeyEditHandles();
+        }
     }
 
     /// <summary>
@@ -132,7 +207,17 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
     /// </summary>    
     void SelectKeyframeByID(int id)
     {
-        selectedKey = activePhysbone.radiusCurve.keys[id];
+
+
+        if(activePhysbone.radiusCurve == null || activePhysbone.radiusCurve.length <= 0)
+        {
+            selectedKeyID = 0;
+            return;
+        }
+
+        selectedKeyID = Mathf.Clamp(id,0,activePhysbone.radiusCurve.length -1);
+
+        selectedKey = activePhysbone.radiusCurve.keys[selectedKeyID];
 
         //--reset quaternion rotation data
         rotation = Quaternion.identity;        
@@ -149,49 +234,30 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         startTime = selectedKey.time;
     }
 
-    public override void CutieInspectorHandles()
-    {        
-        NimbatPhysBoneDrawer.DrawDebugDistanceLabels();
+    void DrawEditRadiusHandle()
+    {
+        float absoluteScale = NimbatPhysBoneDrawer.GetAbsoluteScale(0);
+        float newRadius = activePhysbone.radius;
+        float offset = .05f;
 
-        //--for some reason, if i dont draw this handle first, nothing else works
-        //Dan said this line is very important, this is not a meme or a joke
-        Handles.Label(Vector3.zero, "");
-     
-        tempCurve = activePhysbone.radiusCurve;
+        newRadius = Handles.RadiusHandle(Quaternion.identity, NimbatPhysBoneDrawer.GetPosition(0), (activePhysbone.radius * absoluteScale));
 
-        for (int i = 0; i < tempCurve.keys.Length; i++)
-        {
-            if (i == selectedKeyID)
-            {
-                continue;
-            }
-
-            float keyValue = tempCurve.keys[i].value;
-            Vector3 keyPosition = NimbatPhysBoneDrawer.GetPosition(tempCurve.keys[i].time);
-            float radiusScale = (NimbatPhysBoneDrawer.GetAbsoluteScale(tempCurve.keys[i].time) * keyValue) * activePhysbone.radius;            
-
-            //--we selected a new keyframe
-            if (NimbatPhysBoneDrawer.DrawCurveKeyPoint(keyPosition, radiusScale))
-            {
-                selectedKeyID = i;
-                SelectKeyframeByID(i);
-            }
-        }
-
-        DrawKeyEditHandles();
+        activePhysbone.radius = (newRadius / absoluteScale);
     }
 
 
     void DrawKeyEditHandles()
-    {
+    {        
         //--get the selected key id
         int id = selectedKeyID;
+
+        selectedKeyID = Mathf.Clamp(selectedKeyID, 0, activePhysbone.radiusCurve.keys.Length - 1);
 
         //--reference to the animation curve
         AnimationCurve tempCurve = activePhysbone.radiusCurve;
 
         //--reference to the selected keyframe we are going to edit
-        selectedKey = tempCurve.keys[id];
+        selectedKey = tempCurve.keys[ Mathf.Clamp( id, 0, tempCurve.keys.Length-1)];
         //--shortcuts for keyframe data
         float keyValue = selectedKey.value;
         float keyTime = selectedKey.time;
@@ -211,7 +277,7 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         float scaledRadius = ((newRadius / activePhysbone.radius) / absoluteScale);
 
         //--this part takes care of the tangets
-        Vector3 tangentAxis = NimbatPhysBoneDrawer.GetUpAxisAtPosition(tempCurve.keys[id].time);
+        Vector3 tangentAxis = NimbatPhysBoneDrawer.GetUpAxisAtPosition(selectedKeyID);
 
 
         Handles.color = Color.blue;
@@ -221,8 +287,6 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         rotation = newRotation;        
 
         tangent_editedHandleRotation = rotation * tangentOut_StartPos;
-
-
 
         Handles.DrawLine(keyPosition, keyPosition + (rotation * (tangentIn_StartPos *.15f)));
         Handles.DrawLine(keyPosition, keyPosition + (rotation * (tangentOut_StartPos * .15f)));
@@ -242,14 +306,8 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         //--this part takes care of the key position
 
         Vector3 slideForward = NimbatPhysBoneDrawer.TransformDirectionAtCurvePoint(Vector3.up, keyTime);
-
-        //Vector3 slideBack = NimbatPhysBoneDrawer.TransformDirectionAtCurvePoint(Vector3.down, keyTime);
-
-
-       
-
+               
         editedPosition = Handles.Slider(editedPosition, slideForward, .05f, Handles.ArrowHandleCap, 0);
-
         editedPositionDistance = (Vector3.Distance(startPosition, editedPosition) / physBone_lenght);
 
         dotProduct = Vector3.Dot(startPosition - editedPosition, slideForward);
@@ -257,10 +315,7 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         if(dotProduct > 0)
         {
             editedPositionDistance *= -1;
-        }      
-
-        //Handles.Slider(keyPosition + (slideBack * .03f), slideBack, .02f, Handles.ConeHandleCap, 0);
-        
+        }                    
 
         #region ======================= keyframe data      
 
@@ -283,6 +338,49 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         #endregion
     }
 
+    void DrawAddKeyHandles()
+    {        
+        Color buttonColor = new Color(0, 1, 0, .5f);
+        for (int i = 0; i< tempCurve.keys.Length-1; i++)
+        {
+            float midPoint = tempCurve.keys[i].time + ((tempCurve.keys[i+1].time - tempCurve.keys[i].time)*.5f);
+                        
+            if (DrawSphereButton(midPoint, .05f, buttonColor))
+            {
+                tempCurve.AddKey(midPoint, tempCurve.Evaluate(midPoint));
+            }
+        }
+    }
+
+    void DrawDeleteKeyHandles()
+    {
+        Color buttonColor = new Color(1, 0, 0, .5f);
+        for (int i = 0; i < tempCurve.keys.Length; i++)
+        {
+            float keyPosition = tempCurve.keys[i].time;
+
+            if (DrawSphereButton(keyPosition, .05f, buttonColor))
+            {
+                tempCurve.RemoveKey(i);
+            }
+        }
+    }
+
+    bool DrawSphereButton(float position, float radius, Color color)
+    {
+        Color handlesColor = Handles.color;        
+
+        Handles.color = color;
+
+        if (Handles.Button(NimbatPhysBoneDrawer.GetPosition(position), Quaternion.identity, radius, radius, Handles.SphereHandleCap))
+        {
+            Handles.color = handlesColor;
+            return true;
+        }
+
+        Handles.color = handlesColor;
+        return false;
+    }
 
     /// <summary>
     /// used to create the tangent vector following the physbone curve, 
@@ -325,5 +423,15 @@ public class Nimbat_PhysboneOptions : NimbatCutieInspectorWindow
         return Mathf.Tan(angle * Mathf.Deg2Rad);
     }
 
+    void SetupCurveDefaultKeyframes()
+    {       
+        activePhysbone.radiusCurve.AddKey(0, 1);
+        activePhysbone.radiusCurve.AddKey(1, 1);
+        activePhysbone.radius = .0001f;
+
+        tempCurve = activePhysbone.radiusCurve;
+
+        SelectKeyframeByID(0);
+    }
 
 }

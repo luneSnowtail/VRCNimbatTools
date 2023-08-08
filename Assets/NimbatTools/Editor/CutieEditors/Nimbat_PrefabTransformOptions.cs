@@ -4,6 +4,10 @@ using UnityEngine;
 using UnityEditor;
 
 
+/// <summary>
+/// This class is in charge of resetig a gameobject marked as a prefab to its default state
+/// only transform stuff
+/// </summary>
 public class Nimbat_PrefabTransformOptions : NimbatCutieInspectorWindow
 {
     PrefabInstanceStatus prefabStatus;
@@ -40,10 +44,7 @@ public class Nimbat_PrefabTransformOptions : NimbatCutieInspectorWindow
 
     public override void CutieInspectorContent()
     {
-
-
         GUILayout.Label("Reset by property");
-
         GUILayout.BeginHorizontal();
 
         if (GUILayout.Button("Position", EditorStyles.toolbarButton))
@@ -69,7 +70,6 @@ public class Nimbat_PrefabTransformOptions : NimbatCutieInspectorWindow
             NimbatFunctions.ResetPrefabRotation(activeTransform);
             NimbatFunctions.ResetPrefabScale(activeTransform);
         }
-
     }
 
 

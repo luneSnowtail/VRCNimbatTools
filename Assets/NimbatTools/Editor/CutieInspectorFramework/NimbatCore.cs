@@ -37,7 +37,7 @@ public class NimbatCore : EditorWindow
 
     static public Nimbat_PrefabTransformOptions nimbatOptions_transform;
     static public Nimbat_ContactOptions nimbatOptions_contact;
-    static public Nimbat_PhysboneOptions nimbatOptions_physBone;
+    static public Nimbat_PhysboneEditor nimbatOptions_physBone;
 
     static public Vector2 cutieInspectorPositions;
     static public Vector2 cutieInspectorStart = new Vector2(40, 10);
@@ -48,9 +48,15 @@ public class NimbatCore : EditorWindow
     static bool firstMenuOpen;
 
     static Event e;
-    static public bool keyConsumed;
-    static public bool ctrlDown;
-    static public bool shiftDown;
+    static public bool keyConsumed { get; private set; }
+    static public bool ctrlDown { get; private set; }
+    static public bool shiftDown { get; private set; }
+    static public bool altDown { get; private set; }
+    static public bool delDown { get; private set; }
+
+    static public bool overrideDelKey;
+
+    static public EventType keyEventType;
 
     static public Color handlesDefaultColor;
 
@@ -72,7 +78,7 @@ public class NimbatCore : EditorWindow
         
         nimbatOptions_transform = new Nimbat_PrefabTransformOptions();
         nimbatOptions_contact = new Nimbat_ContactOptions();
-        nimbatOptions_physBone = new Nimbat_PhysboneOptions();
+        nimbatOptions_physBone = new Nimbat_PhysboneEditor();
 
         cutieInspectorWindows = new List<NimbatCutieInspectorWindow>() { vrcAvatarSettings, vrcMirrorGroups, nimbatSettings, nimbatAbout };
         cutieSelectedSettingsWindows = new List<NimbatCutieInspectorWindow>() { nimbatOptions_transform, nimbatOptions_contact, nimbatOptions_physBone };
@@ -107,6 +113,18 @@ public class NimbatCore : EditorWindow
 
         ctrlDown = e.control;
         shiftDown = e.shift;
+        altDown = e.alt;
+        delDown = false;
+        keyEventType = e.type;
+
+        if (overrideDelKey)
+        {
+            if (e.keyCode == KeyCode.Delete)
+            {
+                e.Use();
+                delDown = true;            
+            }
+        }
 
         if(e.type == EventType.KeyDown)
         {

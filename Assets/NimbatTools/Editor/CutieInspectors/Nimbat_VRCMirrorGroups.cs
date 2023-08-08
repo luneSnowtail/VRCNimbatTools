@@ -109,7 +109,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
         scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
-        if(NimbatMirrorData.mirrorContactsList == null)
+        if(NimbatMirrorData.mirrorContactsList == null || NimbatMirrorData.mirrorContactsList.Count <= 0)
         {
             GUILayout.EndScrollView();
             return;
@@ -171,10 +171,10 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
 
 
-        GUILayout.EndScrollView();
+       GUILayout.EndScrollView();
         
 
-        }
+    }
 
     public override void OnEnable()
     {

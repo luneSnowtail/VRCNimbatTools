@@ -84,6 +84,11 @@ public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
 
     public override void CutieInspectorContent()
     {        
+        if(selectedVRCObject.contact == null)
+        {
+            return;
+        }
+
         GUILayout.BeginHorizontal();
 
         if (hasMirrorSuffix)
@@ -196,12 +201,13 @@ public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
     /// </summary>
     static public void DrawSelectedContactHandle()
     {
+        Handles.Label(Vector3.zero, "");  
+
         if (Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType != VRCObjectType.Contact || !activeContact)
         {
             return;
         }
 
-        Handles.Label(Vector3.zero, "");  
 
 
         //--draws name of contact

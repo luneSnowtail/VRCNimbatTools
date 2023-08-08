@@ -23,6 +23,7 @@ public class Nimbat_About : NimbatCutieInspectorWindow
         GUILayout.Label("Twikle_Sparlight for their awesome friendship and support", EditorStyles.wordWrappedMiniLabel);
         GUILayout.Label("Sylv for doing the nimbat >=(", EditorStyles.wordWrappedMiniLabel);
         GUILayout.Label("Masho for all their crimes on twitch D=", EditorStyles.wordWrappedMiniLabel);
+        GUILayout.Label("Kitsunai for releasing all the awoos!!", EditorStyles.wordWrappedMiniLabel);
 
         GUILayout.EndVertical();
     }

@@ -43,7 +43,7 @@ public struct Tag
     public bool hasMirrorSuffix;
 }
 
-public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
+public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 {
     static Color leftSideColor = new Color(0, 0, 1, .3f);
     static Color rightSideColor = new Color(1, 0, 0, .3f);
@@ -67,8 +67,8 @@ public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
 
     static VRCDefaultTags defaultTempTag;
 
-
-    public Nimbat_ContactOptions()
+    #region ============================ constructor / destructor
+    public Nimbat_ContactEditor()
     {
         title = "Mirror Group Contact";
         drawModes = CutieInspectorDrawModes.DropUp;
@@ -77,11 +77,14 @@ public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
 
         Nimbat_SelectionData.OnSelectionChanged += OnSelectionChanged;
     }
-    ~Nimbat_ContactOptions()
+    ~Nimbat_ContactEditor()
     {
         Nimbat_SelectionData.OnSelectionChanged -= OnSelectionChanged;
     }
+    #endregion
 
+
+    #region ========================== CutieInspector overrides
     public override void CutieInspectorContent()
     {        
         if(selectedVRCObject.contact == null)
@@ -196,6 +199,9 @@ public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
         DrawSelectedContactHandle();
     }
 
+
+    #endregion
+
     /// <summary>
     /// If the object we have selected is a contact, we draw the handles to edit it
     /// </summary>
@@ -208,8 +214,6 @@ public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
             return;
         }
 
-
-
         //--draws name of contact
         Handles.Label(NimbatFunctions.GetContactPosition(activeContact), activeContact.transform.name);
 
@@ -219,6 +223,17 @@ public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
             Quaternion.identity,
             NimbatFunctions.GetContactPosition(activeContact),
             activeContact.radius * selectedVRCObject.absoluteScale);
+
+        if(selectedVRCObject.contact.shapeType == ContactBase.ShapeType.Capsule)
+        {
+            Vector3 capsuleDirection = activeContact.transform.TransformDirection(Vector3.up).normalized;
+            Vector3 handlesPosition = activeContact.transform.position + ((capsuleDirection * (activeContact.height * .5f)) * selectedVRCObject.absoluteScale);
+            Vector3 newPosition = Handles.Slider(handlesPosition, capsuleDirection, .05f ,Handles.ConeHandleCap,0);
+
+            float distance = Vector3.Distance(activeContact.transform.position, newPosition);
+
+            activeContact.height = (distance*2) / selectedVRCObject.absoluteScale;
+        }
 
         if (EditorGUI.EndChangeCheck())
         {
@@ -468,5 +483,18 @@ public class Nimbat_ContactOptions : NimbatCutieInspectorWindow
                 mirrorContact.collisionTags.Add(tags[i].tagName);
             }
         }
+
+        mirrorContact.radius = activeContact.radius;
+        mirrorContact.height = activeContact.height;
+        mirrorContact.shapeType = activeContact.shapeType;
+
+        Vector3 localPos;
+        Vector3 localRot;
+
+        NimbatFunctions.MirrorTransforms(mirrorContact.transform, activeContact.transform, out localPos, out localRot);
+
+        mirrorContact.transform.localPosition = localPos;
+        mirrorContact.transform.localRotation = Quaternion.Euler(localRot);
+
     }
 }

@@ -143,7 +143,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
     }
 
     public override void CutieInspectorHandles()
-    {        
+    {
         //--for some reason, if i dont draw this handle first, nothing else works
         //Dan said this line is very important, this is not a meme or a joke     
         Handles.Label(Vector3.zero, "");
@@ -345,7 +345,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
         {
             float midPoint = tempCurve.keys[i].time + ((tempCurve.keys[i+1].time - tempCurve.keys[i].time)*.5f);
                         
-            if (DrawSphereButton(midPoint, .05f, buttonColor))
+            if (NimbatHandles.DrawSphereButton(midPoint, .05f, buttonColor))
             {
                 tempCurve.AddKey(midPoint, tempCurve.Evaluate(midPoint));
             }
@@ -359,28 +359,13 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
         {
             float keyPosition = tempCurve.keys[i].time;
 
-            if (DrawSphereButton(keyPosition, .05f, buttonColor))
+            if (NimbatHandles.DrawSphereButton(keyPosition, .05f, buttonColor))
             {
                 tempCurve.RemoveKey(i);
             }
         }
     }
 
-    bool DrawSphereButton(float position, float radius, Color color)
-    {
-        Color handlesColor = Handles.color;        
-
-        Handles.color = color;
-
-        if (Handles.Button(NimbatPhysBoneDrawer.GetPosition(position), Quaternion.identity, radius, radius, Handles.SphereHandleCap))
-        {
-            Handles.color = handlesColor;
-            return true;
-        }
-
-        Handles.color = handlesColor;
-        return false;
-    }
 
     /// <summary>
     /// used to create the tangent vector following the physbone curve, 
@@ -402,27 +387,15 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
         return tangentVector.normalized;
     }
 
-    float VectorToTangent(Vector3 tangentVector, Vector3 baseVector)
-    {
-        float angle = Vector3.Angle(tangentVector, baseVector);
-
-        return Mathf.Tan( angle * Mathf.Deg2Rad);
-    }
-
-
-    /// <summary>
-    /// receives a tangent and returns an angle in degrees
-    /// </summary>    
-    float TangentToAngle(float tangent)
-    {
-        return Mathf.Atan(tangent) * Mathf.Rad2Deg;
-    }
-
     float AngleToTangent(float angle)
     {
         return Mathf.Tan(angle * Mathf.Deg2Rad);
     }
 
+    /// <summary>
+    /// When a physbone radius curve is empty we need to create a start and end keyframe
+    /// to be able to start editing it
+    /// </summary>
     void SetupCurveDefaultKeyframes()
     {       
         activePhysbone.radiusCurve.AddKey(0, 1);

@@ -36,7 +36,7 @@ public class NimbatCore : EditorWindow
     static public Nimbat_About nimbatAbout;
 
     static public Nimbat_PrefabTransformOptions nimbatOptions_transform;
-    static public Nimbat_ContactOptions nimbatOptions_contact;
+    static public Nimbat_ContactEditor nimbatOptions_contact;
     static public Nimbat_PhysboneEditor nimbatOptions_physBone;
 
     static public Vector2 cutieInspectorPositions;
@@ -77,7 +77,7 @@ public class NimbatCore : EditorWindow
         nimbatAbout = new Nimbat_About();
         
         nimbatOptions_transform = new Nimbat_PrefabTransformOptions();
-        nimbatOptions_contact = new Nimbat_ContactOptions();
+        nimbatOptions_contact = new Nimbat_ContactEditor();
         nimbatOptions_physBone = new Nimbat_PhysboneEditor();
 
         cutieInspectorWindows = new List<NimbatCutieInspectorWindow>() { vrcAvatarSettings, vrcMirrorGroups, nimbatSettings, nimbatAbout };

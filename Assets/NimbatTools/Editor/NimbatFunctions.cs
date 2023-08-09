@@ -237,6 +237,23 @@ public class NimbatFunctions
     }
 
     /// <summary>
+    /// Makes one transform match the target transform but mirrored (in local data)
+    /// </summary>
+    /// <param name="currentTransform">the transform we want to mirror</param>
+    /// <param name="referenceTransform">the reference transform we are copying data from</param>
+    static public void MirrorTransforms(Transform currentTransform, Transform referenceTransform, out Vector3 mirrorPosition, out Vector3 mirrorRotation)
+    {
+        mirrorPosition = referenceTransform.localPosition;
+        mirrorPosition.x *= -1;
+
+        
+        mirrorRotation = referenceTransform.localRotation.eulerAngles;
+        mirrorRotation.z *= -1;
+        mirrorRotation.y *= -1;
+
+    }
+
+    /// <summary>
     /// receives a string and if it ends with "L" or "R" it removes that letter and returns that
     /// </summary>    
     static public string TagToNoSuffix(string tagName)

@@ -59,6 +59,82 @@ public struct NimbatVRCObjectBase
         receiver = null;
     }
 
+    /// <summary>
+    /// returns the world position plus vrc object offset
+    /// </summary>
+    public Vector3 getPosition
+    {
+        get
+        {
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    return _contact.transform.position + _contact.transform.TransformDirection(_contact.position);
+                    
+                case VRCObjectType.PhysBone:
+                    return _physBone.transform.position + _physBone.transform.TransformDirection(_contact.position);
+                    
+
+            }
+
+            return Vector3.zero;
+        }
+        set
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// returns final rotation considering both, transform and vrc object offset rotation
+    /// </summary>
+    public Quaternion getRotation
+    {
+        get
+        {
+            Quaternion transformRotation;
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    transformRotation = _contact.transform.rotation;
+                    Quaternion vrcObjectRotation = _contact.rotation;
+
+                    return transformRotation * vrcObjectRotation;
+
+                    
+                case VRCObjectType.PhysBone:
+                    transformRotation = _physBone.transform.rotation;
+
+                    return transformRotation;
+            }
+
+            return Quaternion.identity;
+        }
+        set
+        {
+
+        }
+    }
+
+    public float vrcObjectRadius
+    {
+        get
+        {
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    return _contact.radius * absoluteScale;
+                    
+                case VRCObjectType.PhysBone:
+                    return _physBone.radius * absoluteScale;                    
+            }
+            return 0;
+        }
+        set
+        {
+
+        }
+    }
 
     private GameObject _baseGO;
     public GameObject baseGO

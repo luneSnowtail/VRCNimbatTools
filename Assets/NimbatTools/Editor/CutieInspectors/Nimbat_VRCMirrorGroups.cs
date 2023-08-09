@@ -315,19 +315,30 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
         Handles.color = color;
         
+        if(vrcObject.contact.shapeType == ContactBase.ShapeType.Sphere)
+        {
+            HandlesUtil.DrawWireSphere(NimbatFunctions.GetContactPosition(vrcObject.contact), vrcObject.vrcObjectRadius);
+        }
+        else
+        {
+            HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, vrcObject.contact.height * vrcObject.absoluteScale, vrcObject.vrcObjectRadius);
+        }
 
-        HandlesUtil.DrawWireSphere(NimbatFunctions.GetContactPosition(vrcObject.contact), vrcObject.contact.radius * vrcObject.absoluteScale);
-                
-        if(NimbatCore.ctrlDown)
-            if (Handles.Button(
-                NimbatFunctions.GetContactPosition(vrcObject.contact),
-                Quaternion.identity,
-                .01f,
-                vrcObject.contact.radius * vrcObject.absoluteScale,
-                Handles.SphereHandleCap))
-            {
-                Selection.activeGameObject = vrcObject.contact.gameObject;
-            }
+        if (!NimbatCore.ctrlDown)
+        {
+            return;
+        }
+
+
+        if (Handles.Button(
+            NimbatFunctions.GetContactPosition(vrcObject.contact),
+            Quaternion.identity,
+            .01f,
+            vrcObject.contact.radius * vrcObject.absoluteScale,
+            Handles.SphereHandleCap))
+        {
+            Selection.activeGameObject = vrcObject.contact.gameObject;
+        }
 
 
         Handles.color = defaultGUIColor;

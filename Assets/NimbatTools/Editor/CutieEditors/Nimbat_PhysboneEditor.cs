@@ -237,10 +237,8 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
     void DrawEditRadiusHandle()
     {
         float absoluteScale = NimbatPhysBoneDrawer.GetAbsoluteScale(0);
-        float newRadius = activePhysbone.radius;
-        float offset = .05f;
-
-        newRadius = Handles.RadiusHandle(Quaternion.identity, NimbatPhysBoneDrawer.GetPosition(0), (activePhysbone.radius * absoluteScale));
+        
+        float newRadius = Handles.RadiusHandle(Quaternion.identity, NimbatPhysBoneDrawer.GetPosition(0), (activePhysbone.radius * absoluteScale));
 
         activePhysbone.radius = (newRadius / absoluteScale);
     }

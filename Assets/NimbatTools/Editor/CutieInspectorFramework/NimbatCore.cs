@@ -32,6 +32,7 @@ public class NimbatCore : EditorWindow
 
     static public Nimbat_VRCMirrorGroups vrcMirrorGroups;
     static public Nimbat_AvatarSettings vrcAvatarSettings;
+    static public Nimbat_ArmatureVisualizer vrcArmature;
     static public Nimbat_Settings nimbatSettings;
     static public Nimbat_About nimbatAbout;
 
@@ -73,6 +74,7 @@ public class NimbatCore : EditorWindow
         //--initialize all CutieInspector classes
         vrcAvatarSettings = new Nimbat_AvatarSettings();
         vrcMirrorGroups = new Nimbat_VRCMirrorGroups();
+        vrcArmature = new Nimbat_ArmatureVisualizer();
         nimbatSettings = new Nimbat_Settings();
         nimbatAbout = new Nimbat_About();
         
@@ -80,7 +82,7 @@ public class NimbatCore : EditorWindow
         nimbatOptions_contact = new Nimbat_ContactEditor();
         nimbatOptions_physBone = new Nimbat_PhysboneEditor();
 
-        cutieInspectorWindows = new List<NimbatCutieInspectorWindow>() { vrcAvatarSettings, vrcMirrorGroups, nimbatSettings, nimbatAbout };
+        cutieInspectorWindows = new List<NimbatCutieInspectorWindow>() { vrcAvatarSettings, vrcMirrorGroups, vrcArmature ,nimbatSettings, nimbatAbout };
         cutieSelectedSettingsWindows = new List<NimbatCutieInspectorWindow>() { nimbatOptions_transform, nimbatOptions_contact, nimbatOptions_physBone };
         
         //--suscribe to scene view
@@ -140,6 +142,10 @@ public class NimbatCore : EditorWindow
             vrcMirrorGroups.isEnabled = !vrcMirrorGroups.isEnabled;         
         }
 
+        if (e.keyCode == KeyCode.Alpha1 && shiftDown && keyConsumed == false)
+        {
+            vrcArmature.isEnabled = !vrcArmature.isEnabled;
+        }
 
     }
 
@@ -171,6 +177,7 @@ public class NimbatCore : EditorWindow
     static void DrawCutieHAndles()
     {
         vrcMirrorGroups.DrawCutieHandles();
+        vrcArmature.DrawCutieHandles();
 
         switch (Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType)
         {

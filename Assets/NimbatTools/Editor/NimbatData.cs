@@ -1,5 +1,7 @@
 ﻿using VRC.Dynamics;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 
 public class NimbatData
@@ -35,7 +37,6 @@ public enum ContactType
     Sender,
     Receiver
 }
-
 
 /// <summary>
 /// This struct always contains an object of vrc type, we need to read vrcObjectType to know
@@ -230,15 +231,6 @@ public struct NimbatVRCObjectBase
     public float absoluteScale;
 }
 
-
-//TO DO, IMPORTANT, THIS STRUCT IS NOT LONGER NEEDED AS MIRROR DATA IS ALSO I VRCOBJECTBASE STRUCT
-public struct SelectedVRCObjectData
-{
-    
-    public MirrorTypes mirrorType;
-    public NimbatVRCObjectBase vrcObject;
-}
-
 public struct NimbatToolsSettings
 {
     public bool realTimeRadiusMirror;           //if set to on, changing this radius also changes their mirrored counterpart
@@ -265,4 +257,10 @@ public struct NimbatPhysBoneSegment
 
     public float distanceAtStart;
     public float distanceAtEnd;
+}
+
+public struct NimbatBone
+{
+    public Transform boneStart;
+    public List<Transform> boneEnds;
 }

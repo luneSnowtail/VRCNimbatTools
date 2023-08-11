@@ -14,12 +14,21 @@ public class Nimbat_SelectionData
     static public SelectionChanged OnSelectionChanged;
     
     static public bool selectionHasMirrorSuffix;        //regardles if mirror is set correctly or exists, the selected object has _L or _R suffix
+    static public bool selectionHasMirrorData;
+    static public MirrorTypes selectionMirrorType
+    {
+        get
+        {
+            return selectedVRCNimbatObject.mirrorType;
+        }
+    }
 
     static public NimbatVRCObjectBase selectedVRCNimbatObject;
     static public NimbatMirrorObject nimbatMirrorData;
 
     static ContactBase selectedContact;
     static VRCPhysBoneBase physBone;
+    static VRCPhysBoneColliderBase collider;
     static GameObject _activeSelectedGameObject;
 
     static bool isPrefab;
@@ -39,6 +48,7 @@ public class Nimbat_SelectionData
                 //--first we search for a contact component
                 selectedContact = value.GetComponent<ContactBase>();
                 physBone = value.GetComponent<VRCPhysBoneBase>();
+                collider = value.GetComponent<VRCPhysBoneColliderBase>();
 
                 if (selectedContact)
                 {
@@ -48,19 +58,29 @@ public class Nimbat_SelectionData
                 {
                     selectedVRCNimbatObject.physBone = physBone;
                 }
+                else if (collider)
+                {
+                    selectedVRCNimbatObject.collider = collider;
+                }
                 else
                 {
                     //--if we dont have an object compatible with NimbatVRCObjectBase we clear the data
                     selectedVRCNimbatObject.ClearData();
                 }
-
+                
                 if (selectedVRCNimbatObject.mirrorType != MirrorTypes.None)
                 {
-                    nimbatMirrorData = NimbatCore.vrcMirrorGroups.GetMirrorObjectDataFromGameObject(selectedContact.gameObject);
                     selectionHasMirrorSuffix = true;
+                    nimbatMirrorData = NimbatCore.vrcMirrorGroups.GetMirrorObjectDataFromGameObject(value);
+                    if (nimbatMirrorData == null)
+                    {
+                        selectionHasMirrorData = false;
+                        Debug.Log("selected object does not has a mirror group");
+                    }
                 }
                 else
                 {
+                    selectionHasMirrorData = false;
                     nimbatMirrorData = null;
                     selectionHasMirrorSuffix = false;
                 }
@@ -79,7 +99,6 @@ public class Nimbat_SelectionData
             OnSelectionChanged?.Invoke();
         }
     }
-
 
 
     static public void ForceSelectionChange()

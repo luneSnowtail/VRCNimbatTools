@@ -35,6 +35,9 @@ public enum VRCDefaultTags
     FingerLittleR,
 };
 
+/// <summary>
+/// Struct used to draw the tag labels in the cutie inspector
+/// </summary>
 [System.Serializable]
 public struct Tag
 {
@@ -100,8 +103,9 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
             {
                 if(GUILayout.Button("Create Mirror Contact"))
                 {
-                    CreateMirrorContact();
+                    CreateOrTransferMirrorData();
                 }
+                
             }
             else
             {
@@ -179,9 +183,11 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
             GUI.enabled = true;
         }
 
+        
+
         if(GUILayout.Button("Copy Tag Data to Mirror"))
         {
-            TransferMirrorTags();
+            CreateOrTransferMirrorData();
         }
 
         activeContact.collisionTags = new List<string>();
@@ -199,6 +205,15 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
         DrawSelectedContactHandle();
     }
 
+    public override bool IsWindowValid()
+    {
+        if(Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType == VRCObjectType.Contact)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     #endregion
 
@@ -250,6 +265,7 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 
         if (hasMirrorData)
         {
+            /*
             if (mirrorPosition)
             {
                 Vector3 mirroredPosition = activeContact.transform.localPosition;
@@ -257,6 +273,7 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 
                 mirrorContact.transform.localPosition = mirroredPosition;
             }
+            */
 
             //draws the mirrored contact
             if (mirrorContact)
@@ -380,6 +397,10 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 
     }
 
+    /// <summary>
+    /// Reads the tags from the component and creates strucs we can use to draw the 
+    /// editor labels
+    /// </summary>
     void UpdateTags()
     {
         if (!activeContact)
@@ -403,47 +424,67 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
     /// If we have mirror suffix but the opposite game objct is missing this function
     /// generates the mirrored game object
     /// </summary>
-    static public void CreateMirrorContact()
+    static public void CreateOrTransferMirrorData()
     {
+        //--first search for a gameobject that already exists
+        GameObject mirrorContactGO = GameObject.Find(NimbatFunctions.MirrorNameSuffix(activeContact.transform.name));
 
-        string mirrorParentName = NimbatFunctions.MirrorNameSuffix(activeContact.transform.parent.name);
-
-        GameObject mirrorParent = GameObject.Find(mirrorParentName);
-
-        if (!mirrorParent)
+        //--if it cant be found we find parent mirror and create a new gameobject
+        if (!mirrorContactGO)
         {
-            return;
+            string mirrorParentName = NimbatFunctions.MirrorNameSuffix(activeContact.transform.parent.name);
+            GameObject mirrorParent = GameObject.Find(mirrorParentName);
+
+            if (!mirrorParent)
+            {
+                return;
+            }
+
+            mirrorContactGO = new GameObject();
+
+            //--parent new gameobject to mirror parent
+            mirrorContactGO.transform.SetParent(mirrorParent.transform, true);
+
+
+            mirrorContactGO.transform.localPosition = NimbatFunctions.MirrorLocalPosition(activeContact.transform.localPosition);
+            mirrorContactGO.transform.localScale = activeContact.transform.localScale;
+
+            //--get the name and mirror the suffix
+            mirrorContactGO.name = NimbatFunctions.MirrorNameSuffix(activeContact.gameObject.name);
         }
 
-        GameObject mirrorContactGO = new GameObject();
-
-        //--parent new gameobject to mirror parent
-        mirrorContactGO.transform.SetParent(mirrorParent.transform, true);
-
-
-        mirrorContactGO.transform.localPosition = NimbatFunctions.MirrorLocalPosition(activeContact.transform.localPosition);
-        mirrorContactGO.transform.localScale = activeContact.transform.localScale;
-
-        //--get the name and mirror the suffix
-        mirrorContactGO.name = NimbatFunctions.MirrorNameSuffix(activeContact.gameObject.name);
 
         ContactBase mirrorContactComponent;
-        ContactReceiver mirrorContactReceiverComponent;
+        
 
         if(selectedVRCObject.contactType == ContactType.Receiver)
         {
-            mirrorContactReceiverComponent = mirrorContactGO.AddComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactReceiver>();
+            ContactReceiver mirrorContactReceiverComponent = mirrorContactGO.GetComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactReceiver>();
+            if (!mirrorContactReceiverComponent)
+            {
+                mirrorContactReceiverComponent = mirrorContactGO.AddComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactReceiver>();
+            }
+
             mirrorContactComponent = mirrorContactReceiverComponent;
 
             mirrorContactReceiverComponent.receiverType = selectedVRCObject.receiver.receiverType;
             mirrorContactReceiverComponent.minVelocity = selectedVRCObject.receiver.minVelocity;
-            mirrorContactReceiverComponent.parameter = NimbatFunctions.GetTagMirrorSuffix(selectedVRCObject.receiver.parameter);
+
+            if(!string.IsNullOrWhiteSpace(mirrorContactReceiverComponent.parameter))
+            {
+                mirrorContactReceiverComponent.parameter = NimbatFunctions.GetTagMirrorSuffix(selectedVRCObject.receiver.parameter);
+            }
 
         }
         else
         {
-            mirrorContactComponent = mirrorContactGO.AddComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactSender>();
+            mirrorContactComponent = mirrorContactGO.GetComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactSender>();
 
+            //--we only create component if we did not found it
+            if (!mirrorContactComponent)
+            {
+                mirrorContactComponent = mirrorContactGO.AddComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactSender>();
+            }
         }
 
         mirrorContactComponent.radius = activeContact.radius;
@@ -466,11 +507,17 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
     {
         if (!mirrorContact)
         {
-            Debug.Log("Nimbat tools: we dont have a mirror contact in this group");
+            Debug.LogWarning("Nimbat tools: we dont have a mirror contact in this group");
             return;
         }
 
         mirrorContact.collisionTags = new List<string>();
+
+        if(tags.Count <= 0)
+        {
+            Debug.LogWarning("Nimbat tools: selected contact has no tags to mirror");
+            return;
+        }
 
         for(int i = 0; i < tags.Count; i++)
         {

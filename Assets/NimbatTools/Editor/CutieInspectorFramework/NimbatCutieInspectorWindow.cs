@@ -92,12 +92,24 @@ public class NimbatCutieInspectorWindow
     {
         get
         {
-            if (expanded)
+            switch (drawModes)
             {
-                return (int)position.y + titleHeight + height + 5;
-            }
+                case CutieInspectorDrawModes.DropDown:
+                    if (expanded)
+                    {
+                        return (int)position.y + titleHeight + height + 5;
+                    }
 
-            return (int)position.y + titleHeight + 5;
+                    return (int)position.y + titleHeight + 5;
+                case CutieInspectorDrawModes.DropUp:
+                    if (expanded)
+                    {
+                        return (int)position.y - titleHeight - height;
+                    }
+
+                    return (int)position.y - titleHeight;
+            }
+            return 0;
         }
         set
         {
@@ -192,6 +204,11 @@ public class NimbatCutieInspectorWindow
     virtual public void OnDisable()
     {
 
+    }
+
+    virtual public bool IsWindowValid()
+    {
+        return false;
     }
 
 }

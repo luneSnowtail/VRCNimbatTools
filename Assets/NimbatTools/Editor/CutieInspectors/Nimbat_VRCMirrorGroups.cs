@@ -317,11 +317,11 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         
         if(vrcObject.contact.shapeType == ContactBase.ShapeType.Sphere)
         {
-            HandlesUtil.DrawWireSphere(NimbatFunctions.GetContactPosition(vrcObject.contact), vrcObject.vrcObjectRadius);
+            HandlesUtil.DrawWireSphere(NimbatFunctions.GetContactPosition(vrcObject.contact), vrcObject.vrcRadius_Scaled);
         }
         else
         {
-            HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, vrcObject.contact.height * vrcObject.absoluteScale, vrcObject.vrcObjectRadius);
+            HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, vrcObject.contact.height * vrcObject.absoluteScale, vrcObject.vrcRadius_Scaled);
         }
 
         if (!NimbatCore.ctrlDown)

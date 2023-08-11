@@ -97,6 +97,14 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
 
     public override void CutieInspectorContent()
     {
+        GUILayout.Label("------ ");
+
+        if (!activePhysbone)
+        {
+            GUILayout.Label("No physbone selected, returning");
+            GUILayout.Label("------ ");
+            return;
+        }
 
         if (!activePhysbone.rootTransform)
         {
@@ -106,40 +114,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
             return;
         }
 
-        /*
-        GUILayout.Label("Physbone lenght " + physBone_lenght, EditorStyles.miniLabel);
-        GUILayout.Label("Physbone radius " + physBone_radius, EditorStyles.miniLabel);
 
-        GUILayout.Label("------ ");
-
-        GUILayout.Label("Tangent in " + currentKey.inTangent, EditorStyles.miniLabel);
-        GUILayout.Label("Tangent out " + currentKey.outTangent, EditorStyles.miniLabel);
-        
-        GUILayout.Label("------ ");
-
-        GUILayout.Label("Angle tangent in " + TangentToAngle(currentKey.inTangent) , EditorStyles.miniLabel);
-        GUILayout.Label("Angle tangent out " + TangentToAngle(currentKey.outTangent), EditorStyles.miniLabel);
-
-        GUILayout.Label("------ ");
-
-        GUILayout.Label("Angle from in vector "  + angle_InVector.ToString(), EditorStyles.miniLabel);
-        GUILayout.Label("Angle from out vector " + angle_OutVector.ToString(), EditorStyles.miniLabel);
-
-        GUILayout.Label("------ ");
-
-        GUILayout.Label("Tangent from in vector " + AngleToTangent(angle_InVector).ToString(), EditorStyles.miniLabel);
-        GUILayout.Label("Tangent from out vector " + AngleToTangent(angle_OutVector).ToString(), EditorStyles.miniLabel);
-        */
-
-        GUILayout.Label("phys segments count " + NimbatPhysBoneDrawer.physBoneSegments.Count.ToString());
-
-        GUILayout.Label("------ ");
-        GUILayout.Label("Distance " + Vector3.Distance(startPosition, editedPosition));
-
-        GUILayout.Label("key time " + selectedKey.time);
-        GUILayout.Label("key value " + selectedKey.value);
-
-        GUILayout.Label("new value distance " + editedPositionDistance.ToString());        
     }
 
     public override void CutieInspectorHandles()
@@ -200,6 +175,15 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
         }
             DrawKeyEditHandles();
         }
+    }
+
+    public override bool IsWindowValid()
+    {
+        if(Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType == VRCObjectType.PhysBone)
+        {
+            return true;
+        }
+        return false;
     }
 
     /// <summary>

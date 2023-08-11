@@ -39,14 +39,20 @@ public class NimbatCore : EditorWindow
     static public Nimbat_PrefabTransformOptions nimbatOptions_transform;
     static public Nimbat_ContactEditor nimbatOptions_contact;
     static public Nimbat_PhysboneEditor nimbatOptions_physBone;
+    static public Nimbat_ColliderEditor nimbatOptions_collider;
+    static public Nimbat_MirrorObjectEditor nimbatOptions_mirror;
 
     static public Vector2 cutieInspectorPositions;
     static public Vector2 cutieInspectorStart = new Vector2(40, 10);
 
+    static public Vector2 cutieInspectorEditorPositions;
+    //static public Vector2 cutieInspectorEditorPositionsStart = new Vector3(SceneView.lastActiveSceneView.camera.pixelWidth - 300, SceneView.lastActiveSceneView.camera.pixelHeight - 10);
+
     static public List<NimbatCutieInspectorWindow> cutieInspectorWindows;                   //Main toolbars for the plugin, about, mirror groups, settings, etc.
-    static public List<NimbatCutieInspectorWindow> cutieSelectedSettingsWindows;            //windows that shows additional settings to selected items
+    static public List<NimbatCutieInspectorWindow> cutieEditorWindows;            //windows that shows additional settings to selected items
     
     static bool firstMenuOpen;
+    static bool firstEditorOpen;
 
     static Event e;
     static public bool keyConsumed { get; private set; }
@@ -79,11 +85,13 @@ public class NimbatCore : EditorWindow
         nimbatAbout = new Nimbat_About();
         
         nimbatOptions_transform = new Nimbat_PrefabTransformOptions();
+        nimbatOptions_mirror = new Nimbat_MirrorObjectEditor();
         nimbatOptions_contact = new Nimbat_ContactEditor();
         nimbatOptions_physBone = new Nimbat_PhysboneEditor();
+        nimbatOptions_collider = new Nimbat_ColliderEditor();
 
         cutieInspectorWindows = new List<NimbatCutieInspectorWindow>() { vrcAvatarSettings, vrcMirrorGroups, vrcArmature ,nimbatSettings, nimbatAbout };
-        cutieSelectedSettingsWindows = new List<NimbatCutieInspectorWindow>() { nimbatOptions_transform, nimbatOptions_contact, nimbatOptions_physBone };
+        cutieEditorWindows = new List<NimbatCutieInspectorWindow>() { nimbatOptions_transform, nimbatOptions_mirror, nimbatOptions_contact, nimbatOptions_physBone, nimbatOptions_collider };
         
         //--suscribe to scene view
         SceneView.duringSceneGui += OnSceneGUI;
@@ -179,6 +187,8 @@ public class NimbatCore : EditorWindow
         vrcMirrorGroups.DrawCutieHandles();
         vrcArmature.DrawCutieHandles();
 
+        nimbatOptions_mirror.DrawCutieHandles();
+
         switch (Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType)
         {
             case VRCObjectType.Contact:
@@ -187,9 +197,10 @@ public class NimbatCore : EditorWindow
             case VRCObjectType.PhysBone:
                 nimbatOptions_physBone.DrawCutieHandles();
                 break;
-        }
-
-        
+            case VRCObjectType.Collider:                
+                nimbatOptions_collider.DrawCutieHandles();
+                break;
+        }        
     }
 
     /// <summary>
@@ -258,30 +269,25 @@ public class NimbatCore : EditorWindow
     /// </summary>
     static void DrawCutieSettings()
     {
-        if (Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType == VRCObjectType.Contact)
-        {
-            nimbatOptions_contact.isEnabled = true;
-            nimbatOptions_contact.position.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 300, SceneView.lastActiveSceneView.camera.pixelHeight - 10);
-            nimbatOptions_contact.DrawCutieInspectorWindow();
-        }
-        else
-        {
-            nimbatOptions_contact.isEnabled = false;
-        }
+        firstEditorOpen = false;
 
-        if(Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType == VRCObjectType.PhysBone)
-        {            
-            nimbatOptions_physBone.isEnabled = true;
-            nimbatOptions_physBone.position.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 300, SceneView.lastActiveSceneView.camera.pixelHeight - 10);
-            nimbatOptions_physBone.DrawCutieInspectorWindow();
-        }
-        else
+        for(int i = 0; i< cutieEditorWindows.Count; i++)
         {
-            nimbatOptions_physBone.isEnabled = false;
-        }
+            if (cutieEditorWindows[i].IsWindowValid())
+            {
+                if (!firstEditorOpen)
+                {
+                    firstEditorOpen = true;
+                    cutieInspectorEditorPositions.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 300, SceneView.lastActiveSceneView.camera.pixelHeight - 10);
+                }
 
-        nimbatOptions_transform.position.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 300, SceneView.lastActiveSceneView.camera.pixelHeight - 10);
-        nimbatOptions_transform.DrawCutieInspectorWindow();
+                cutieEditorWindows[i].isEnabled = true;
+                cutieEditorWindows[i].position = cutieInspectorEditorPositions;
+                cutieEditorWindows[i].DrawCutieInspectorWindow();
+
+                cutieInspectorEditorPositions.Set(cutieInspectorEditorPositions.x, cutieEditorWindows[i].heightEndMargin);
+            }
+        }  
     }
 
     static bool DrawButton(Texture2D buttonIcon)

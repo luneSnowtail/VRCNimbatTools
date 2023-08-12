@@ -13,17 +13,35 @@ public class NimbatMirrorData : ScriptableObject
     public NimbatMirrorData()
     {
         avatarContacts = new List<ContactBase>();
-        mirrorContactsList = new List<NimbatMirrorObject>();
+        vrcMirrorGroups = new List<NimbatMirrorObject>();
     }
 
     static public List<ContactBase> avatarContacts;
-    static public List<NimbatMirrorObject> mirrorContactsList;
+    static public List<VRCPhysBoneBase> avatarPhysbones;
+    static public List<VRCPhysBoneColliderBase> avatarColliders;
+
+    static public List<NimbatMirrorObject> vrcMirrorGroups;
 }
 
 [System.Serializable]
 public class NimbatMirrorObject
 {
-    public VRCObjectType vrcObjectType;
+    public VRCObjectType vrcObjectType
+    {
+        get
+        {
+            if(vrcObject_Left.vrcObjectType != VRCObjectType.None)
+            {
+                return vrcObject_Left.vrcObjectType;
+            }
+            else if(vrcObject_Right.vrcObjectType != VRCObjectType.None)
+            {
+                return vrcObject_Right.vrcObjectType;
+            }
+
+            return vrcObject_NoMirror.vrcObjectType;
+        }
+    }
 
     public bool mirrorGroupValid = false;
     public bool showInScene = true;
@@ -37,8 +55,7 @@ public class NimbatMirrorObject
 
     public void SetContact(ContactBase contact)
     {
-        bool isRightSide;
-        vrcObjectType = VRCObjectType.Contact; 
+        bool isRightSide;        
 
         if(NimbatFunctions.NameHasMirrorSuffix(contact.name, out isRightSide))
         {

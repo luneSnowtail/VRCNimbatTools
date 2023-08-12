@@ -145,16 +145,28 @@ public class NimbatCore : EditorWindow
             keyConsumed = false;
         }
 
-        if (e.keyCode == KeyCode.Alpha2 && shiftDown && keyConsumed == false)
-        {
-            vrcMirrorGroups.isEnabled = !vrcMirrorGroups.isEnabled;         
-        }
-
         if (e.keyCode == KeyCode.Alpha1 && shiftDown && keyConsumed == false)
         {
             vrcArmature.isEnabled = !vrcArmature.isEnabled;
         }
 
+        if (e.keyCode == KeyCode.Alpha2 && shiftDown && keyConsumed == false)
+        {
+            vrcMirrorGroups.isEnabled = !vrcMirrorGroups.isEnabled;
+            vrcMirrorGroups.SetFilterObject(VRCObjectType.PhysBone, false);            
+
+        }
+        if (e.keyCode == KeyCode.Alpha3 && shiftDown && keyConsumed == false)
+        {
+            vrcMirrorGroups.isEnabled = !vrcMirrorGroups.isEnabled;
+            vrcMirrorGroups.SetFilterObject(VRCObjectType.Contact, false);
+        }
+        if (e.keyCode == KeyCode.Alpha4 && shiftDown && keyConsumed == false)
+        {
+            vrcMirrorGroups.isEnabled = !vrcMirrorGroups.isEnabled;
+            vrcMirrorGroups.SetFilterObject(VRCObjectType.Collider, false);
+        }
+                        
     }
 
     /// <summary>
@@ -188,6 +200,7 @@ public class NimbatCore : EditorWindow
         vrcArmature.DrawCutieHandles();
 
         nimbatOptions_mirror.DrawCutieHandles();
+        vrcAvatarSettings.DrawCutieHandles();
 
         switch (Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType)
         {

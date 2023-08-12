@@ -17,11 +17,13 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
         mainButtonIconPath = "Button_armature";
 
         NimbatCore.OnHierarchyChanged += RefreshVRCObjectData;
+        Nimbat_AvatarSettings.OnNewAvatarSelected += RefreshVRCObjectData;
     }
 
     ~Nimbat_ArmatureVisualizer()
     {
         NimbatCore.OnHierarchyChanged -= RefreshVRCObjectData;
+        Nimbat_AvatarSettings.OnNewAvatarSelected -= RefreshVRCObjectData;
     }
     #endregion
 
@@ -53,7 +55,7 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
 
     void FindAvatarData()
     {
-        vrcAvatarAnimator = GameObject.FindObjectOfType<Animator>();
+        vrcAvatarAnimator = Nimbat_AvatarSettings.selectedAvatarAnimator;
         baseTransform = vrcAvatarAnimator.GetBoneTransform(HumanBodyBones.Hips);
 
         //boneTransforms = new List<Transform>();
@@ -116,7 +118,7 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
             FindAvatarData();
         }
 
-        Handles.Label(Vector3.zero, "armature");
+        Handles.Label(Vector3.zero, "");
 
         
         foreach(NimbatBone bone in humanoidBones)

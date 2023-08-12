@@ -13,21 +13,26 @@ using VRC.Dynamics;
 
 [System.Serializable]
 public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
-{
-
+{    
     Vector2 scrollPosition;
 
     static Texture2D buttonIcon_visible;
     static Texture2D buttonIcon_NotVisible;
 
-    bool _tabPhysbones = true;
-    bool _tabContacts;
-    bool _tabColliders;
+    static Texture2D icon_collider;
+    static Texture2D icon_contact;
+    static Texture2D icon_physbone ;
+
+
+    int groupHeight = 17;
 
     bool tabPhysbones = true;
-    bool tabContacts;
-    bool tabColliders;
+    bool tabContacts = true;
+    bool tabColliders = true;
 
+    bool _tabPhysbones = true;
+    bool _tabContacts = true;
+    bool _tabColliders = true;
 
     public Nimbat_VRCMirrorGroups()
     {
@@ -37,14 +42,21 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
         buttonIcon_visible = (Texture2D) Resources.Load("object_visible");
         buttonIcon_NotVisible = (Texture2D)Resources.Load("object_noVisible");
+
+        icon_collider = (Texture2D)Resources.Load("icon_collider");
+        icon_contact = (Texture2D)Resources.Load("icon_contact");
+        icon_physbone = (Texture2D)Resources.Load("icon_physbone");
+        
         mainButtonIconPath = "Button_vrcObjects";
 
         NimbatCore.OnHierarchyChanged += RefreshVRCObjectData;
+        Nimbat_AvatarSettings.OnNewAvatarSelected += RefreshVRCObjectData;
     }
 
     ~Nimbat_VRCMirrorGroups()
     {
         NimbatCore.OnHierarchyChanged -= RefreshVRCObjectData;
+        Nimbat_AvatarSettings.OnNewAvatarSelected -= RefreshVRCObjectData;
     }
 
     #region ========================== CutieInspectorOVerrides
@@ -54,10 +66,10 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     }
 
     public override void CutieInspectorContent()
-    {        
+    {
         GUILayout.BeginHorizontal();
 
-        tabPhysbones = GUILayout.Toggle(tabPhysbones, "Physbones",EditorStyles.toolbarButton);
+        tabPhysbones = GUILayout.Toggle(tabPhysbones, "Physbones", EditorStyles.toolbarButton);
         tabContacts = GUILayout.Toggle(tabContacts, "Contacts", EditorStyles.toolbarButton);
         tabColliders = GUILayout.Toggle(tabColliders, "Colliders", EditorStyles.toolbarButton);
 
@@ -105,76 +117,106 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
         GUILayout.EndHorizontal();
 
-
+        GUILayout.Label("", GUILayout.Height(2));
 
         scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
-        if(NimbatMirrorData.mirrorContactsList == null || NimbatMirrorData.mirrorContactsList.Count <= 0)
+        if(NimbatMirrorData.vrcMirrorGroups == null || NimbatMirrorData.vrcMirrorGroups.Count <= 0)
         {
             GUILayout.EndScrollView();
             return;
         }
 
-        for(int i = 0; i< NimbatMirrorData.mirrorContactsList.Count; i++)
+        for(int i = 0; i< NimbatMirrorData.vrcMirrorGroups.Count; i++)
         {
+
+            switch (NimbatMirrorData.vrcMirrorGroups[i].vrcObjectType)
+            {
+                case VRCObjectType.Collider:
+                    if (!tabColliders)
+                        continue;
+                    break;
+                case VRCObjectType.Contact:
+                    if (!tabContacts)
+                        continue;
+                    break;
+                case VRCObjectType.PhysBone:
+                    if (!tabPhysbones)
+                        continue;
+                    break;
+            }
+
             GUILayout.BeginHorizontal();
 
 
-            if (NimbatMirrorData.mirrorContactsList[i].showInScene)
+            //---draws the eye to show or hide the object
+            if (NimbatMirrorData.vrcMirrorGroups[i].showInScene)
             {
-                NimbatMirrorData.mirrorContactsList[i].showInScene = GUILayout.Toggle(NimbatMirrorData.mirrorContactsList[i].showInScene, buttonIcon_visible, EditorStyles.toolbarButton, GUILayout.Width(20), GUILayout.Height(20));
+                NimbatMirrorData.vrcMirrorGroups[i].showInScene = GUILayout.Toggle(NimbatMirrorData.vrcMirrorGroups[i].showInScene, buttonIcon_visible, EditorStyles.toolbarButton, GUILayout.Width(20), GUILayout.Height(groupHeight));
             }
             else
             {
-                NimbatMirrorData.mirrorContactsList[i].showInScene = GUILayout.Toggle(NimbatMirrorData.mirrorContactsList[i].showInScene, buttonIcon_NotVisible, EditorStyles.toolbarButton, GUILayout.Width(20), GUILayout.Height(20));
+                NimbatMirrorData.vrcMirrorGroups[i].showInScene = GUILayout.Toggle(NimbatMirrorData.vrcMirrorGroups[i].showInScene, buttonIcon_NotVisible, EditorStyles.toolbarButton, GUILayout.Width(20), GUILayout.Height(groupHeight));
             }
 
+            switch (NimbatMirrorData.vrcMirrorGroups[i].vrcObjectType)
+            {
+                case VRCObjectType.Collider:
+                    GUILayout.Label(icon_collider, GUILayout.Width(18), GUILayout.Height(groupHeight));
+                    break;
+                case VRCObjectType.Contact:
+                    GUILayout.Label(icon_contact, GUILayout.Width(18), GUILayout.Height(groupHeight));
+                    break;
+                case VRCObjectType.PhysBone:
+                    GUILayout.Label(icon_physbone, GUILayout.Width(18), GUILayout.Height(groupHeight));
+                    break;
+            }
             
 
-            GUILayout.Label(NimbatMirrorData.mirrorContactsList[i].groupName, GUILayout.Width(150), GUILayout.Height(20));
+            //--draws the group name
+            GUILayout.Label(NimbatMirrorData.vrcMirrorGroups[i].groupName, GUILayout.Width(120), GUILayout.Height(groupHeight));
 
-            if (NimbatMirrorData.mirrorContactsList[i].mirrorGroupValid)
+            //--checks for mirror data and draws "_L" or "_R" or "Select" button
+            if (NimbatMirrorData.vrcMirrorGroups[i].mirrorGroupValid)
             {
                 //--before drawing the button to select an object we make sure it exist
-                if (!NimbatMirrorData.mirrorContactsList[i].vrcObject_Left.contact)
+                if (!NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject)
                 {
                     GUI.enabled = false;
                 }
-                if (GUILayout.Button("_L"))
+                if (GUILayout.Button("_L", GUILayout.Width(25), GUILayout.Height(groupHeight)))
                 {                
-                    Selection.activeGameObject = NimbatMirrorData.mirrorContactsList[i].vrcObject_Left.contact.gameObject;
+                    Selection.activeGameObject = NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject;
                 }
                 GUI.enabled = true;
 
                 //--before drawing the button to select an object we make sure it exist
-                if (!NimbatMirrorData.mirrorContactsList[i].vrcObject_Right.contact)
+                if (!NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject)
                 {
                     GUI.enabled = false;
                 }
-                if (GUILayout.Button("_R"))
+                if (GUILayout.Button("_R", GUILayout.Width(25), GUILayout.Height(groupHeight)))
                 {                
-                    Selection.activeGameObject = NimbatMirrorData.mirrorContactsList[i].vrcObject_Right.contact.gameObject;
+                    Selection.activeGameObject = NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject;
                 }
                 GUI.enabled = true;
             }
             else
             {
-                if (GUILayout.Button("select"))
+                if (GUILayout.Button("select", GUILayout.Width(52), GUILayout.Height(groupHeight)))
                 {
-                    Selection.activeGameObject = NimbatMirrorData.mirrorContactsList[i].vrcObject_NoMirror.contact.gameObject;
+                    Selection.activeGameObject = NimbatMirrorData.vrcMirrorGroups[i].vrcObject_NoMirror.gameObject;
                 }
             }
 
 
             GUILayout.EndHorizontal();
         }
-
-
-
        GUILayout.EndScrollView();
-        
 
+       GUILayout.Label("", GUILayout.Height(2));
     }
+    
 
     public override void OnEnable()
     {
@@ -189,21 +231,34 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     /// </summary>
     public void RefreshVRCObjectData()
     {
-        FindContacts();
-        SortContactsToMirrorData();
+        FindVRCObjects();
+        CreateMirrorGroups();
     }
 
-    void FindContacts()
-    {
-        NimbatMirrorData.avatarContacts = new List<ContactBase>(Editor.FindObjectsOfType<ContactBase>());
+    void FindVRCObjects()
+    {        
+        NimbatMirrorData.avatarContacts = new List<ContactBase>(Nimbat_AvatarSettings.selectedAvatar.gameObject.GetComponentsInChildren<ContactBase>());
+        NimbatMirrorData.avatarColliders = new List<VRCPhysBoneColliderBase>(Nimbat_AvatarSettings.selectedAvatar.gameObject.GetComponentsInChildren<VRCPhysBoneColliderBase>());
+        NimbatMirrorData.avatarPhysbones = new List<VRCPhysBoneBase>(Nimbat_AvatarSettings.selectedAvatar.gameObject.GetComponentsInChildren<VRCPhysBoneBase>());
     }
 
-    void SortContactsToMirrorData()
+    void CreateMirrorGroups()
     {
-        NimbatMirrorData.mirrorContactsList = new List<NimbatMirrorObject>();
+        //--create list of mirrored objects
+        NimbatMirrorData.vrcMirrorGroups = new List<NimbatMirrorObject>();
 
-        NimbatMirrorObject tempMirrorObject;        
-        string tempMirrorContactName;
+        //--temporary mirror object
+        
+
+        CreateMirrorForContacts();
+        CreateMirrorForPhysbones();
+        CreateMirrorForColliders();
+    }
+
+    void CreateMirrorForContacts()
+    {
+        NimbatMirrorObject tempMirrorObject;
+        string tempMirrorObjectName;
         bool isRightSide;
 
         for (int i = 0; i < NimbatMirrorData.avatarContacts.Count; i++)
@@ -216,8 +271,8 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
                     tempMirrorObject = new NimbatMirrorObject();
                     tempMirrorObject.groupName = NimbatFunctions.MirrorNameToNoSuffix(NimbatMirrorData.avatarContacts[i].name);
 
-                    tempMirrorContactName = NimbatFunctions.MirrorNameSuffix(NimbatMirrorData.avatarContacts[i].name);
-                    
+                    tempMirrorObjectName = NimbatFunctions.MirrorNameSuffix(NimbatMirrorData.avatarContacts[i].name);
+
 
                     if (isRightSide)
                     {
@@ -233,7 +288,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
                     for (int j = 0; j < NimbatMirrorData.avatarContacts.Count; j++)
                     {
                         if (NimbatMirrorData.avatarContacts[j] != null)
-                            if (NimbatMirrorData.avatarContacts[j].name == tempMirrorContactName)
+                            if (NimbatMirrorData.avatarContacts[j].name == tempMirrorObjectName)
                             {
                                 if (isRightSide)
                                 {
@@ -248,25 +303,15 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
                             }
                     }
 
-                    if (tempMirrorObject.vrcObject_Left.contact)
-                    {
-                        tempMirrorObject.vrcObject_Left.absoluteScale = NimbatFunctions.GetAbsoluteScale(tempMirrorObject.vrcObject_Left.contact.gameObject);
-                    }
-                    if (tempMirrorObject.vrcObject_Right.contact)
-                    {
-                        tempMirrorObject.vrcObject_Right.absoluteScale = NimbatFunctions.GetAbsoluteScale(tempMirrorObject.vrcObject_Right.contact.gameObject);
-                    }
-
                     tempMirrorObject.mirrorGroupValid = true;
-
-                    NimbatMirrorData.mirrorContactsList.Add(tempMirrorObject);
+                    NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
                 }
                 else
                 {
                     tempMirrorObject = new NimbatMirrorObject();
                     tempMirrorObject.SetContact(NimbatMirrorData.avatarContacts[i]);
 
-                    NimbatMirrorData.mirrorContactsList.Add(tempMirrorObject);
+                    NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
 
                     NimbatMirrorData.avatarContacts[i] = null;
                 }
@@ -274,55 +319,259 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         }
     }
 
+    void CreateMirrorForPhysbones()
+    {
+        NimbatMirrorObject tempMirrorObject;
+        string tempMirrorObjectName;
+        bool isRightSide;
+
+        for (int i = 0; i < NimbatMirrorData.avatarPhysbones.Count; i++)
+        {
+            //--we only do operations if the space is not null
+            if (NimbatMirrorData.avatarPhysbones[i] != null)
+            {
+                if (NimbatFunctions.NameHasMirrorSuffix(NimbatMirrorData.avatarPhysbones[i].name, out isRightSide))
+                {
+                    tempMirrorObject = new NimbatMirrorObject();
+                    tempMirrorObject.groupName = NimbatFunctions.MirrorNameToNoSuffix(NimbatMirrorData.avatarPhysbones[i].name);
+
+                    tempMirrorObjectName = NimbatFunctions.MirrorNameSuffix(NimbatMirrorData.avatarPhysbones[i].name);
+
+
+                    if (isRightSide)
+                    {
+                        tempMirrorObject.vrcObject_Right.physBone = NimbatMirrorData.avatarPhysbones[i];
+                    }
+                    else
+                    {
+                        tempMirrorObject.vrcObject_Left.physBone = NimbatMirrorData.avatarPhysbones[i];
+                    }
+
+                    NimbatMirrorData.avatarPhysbones[i] = null;
+
+                    for (int j = 0; j < NimbatMirrorData.avatarPhysbones.Count; j++)
+                    {
+                        if (NimbatMirrorData.avatarPhysbones[j] != null)
+                            if (NimbatMirrorData.avatarPhysbones[j].name == tempMirrorObjectName)
+                            {
+                                if (isRightSide)
+                                {
+                                    tempMirrorObject.vrcObject_Left.physBone = NimbatMirrorData.avatarPhysbones[j];
+                                }
+                                else
+                                {
+                                    tempMirrorObject.vrcObject_Right.physBone = NimbatMirrorData.avatarPhysbones[j];
+                                }
+
+                                NimbatMirrorData.avatarPhysbones[j] = null;
+                            }
+                    }
+
+                    tempMirrorObject.mirrorGroupValid = true;
+                    NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
+                }
+                else
+                {
+                    tempMirrorObject = new NimbatMirrorObject();
+                    tempMirrorObject.vrcObject_NoMirror.physBone = NimbatMirrorData.avatarPhysbones[i];
+
+                    tempMirrorObject.groupName = NimbatMirrorData.avatarPhysbones[i].name;
+
+                    NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
+
+                    NimbatMirrorData.avatarPhysbones[i] = null;
+                }
+            }
+        }
+    }
+
+    void CreateMirrorForColliders()
+    {
+
+        
+        NimbatMirrorObject tempMirrorObject;
+        string tempMirrorObjectName;
+        bool isRightSide;
+
+        for (int i = 0; i < NimbatMirrorData.avatarColliders.Count; i++)
+        {
+            //--we only do operations if the space is not null
+            if (NimbatMirrorData.avatarColliders[i] != null)
+            {
+                if (NimbatFunctions.NameHasMirrorSuffix(NimbatMirrorData.avatarColliders[i].name, out isRightSide))
+                {
+                    tempMirrorObject = new NimbatMirrorObject();
+                    tempMirrorObject.groupName = NimbatFunctions.MirrorNameToNoSuffix(NimbatMirrorData.avatarColliders[i].name);
+
+                    tempMirrorObjectName = NimbatFunctions.MirrorNameSuffix(NimbatMirrorData.avatarColliders[i].name);
+
+
+                    if (isRightSide)
+                    {
+                        tempMirrorObject.vrcObject_Right.collider = NimbatMirrorData.avatarColliders[i];
+                    }
+                    else
+                    {
+                        tempMirrorObject.vrcObject_Left.collider = NimbatMirrorData.avatarColliders[i];
+                    }
+
+                    NimbatMirrorData.avatarPhysbones[i] = null;
+
+                    for (int j = 0; j < NimbatMirrorData.avatarColliders.Count; j++)
+                    {
+                        if (NimbatMirrorData.avatarColliders[j] != null)
+                            if (NimbatMirrorData.avatarColliders[j].name == tempMirrorObjectName)
+                            {
+                                if (isRightSide)
+                                {
+                                    tempMirrorObject.vrcObject_Left.collider = NimbatMirrorData.avatarColliders[j];
+                                }
+                                else
+                                {
+                                    tempMirrorObject.vrcObject_Right.collider = NimbatMirrorData.avatarColliders[j];
+                                }
+
+                                NimbatMirrorData.avatarColliders[j] = null;
+                            }
+                    }
+
+                    tempMirrorObject.mirrorGroupValid = true;
+                    NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
+                }
+                else
+                {
+                    tempMirrorObject = new NimbatMirrorObject();
+                    tempMirrorObject.vrcObject_NoMirror.collider = NimbatMirrorData.avatarColliders[i];
+
+                    tempMirrorObject.groupName = NimbatMirrorData.avatarColliders[i].name;
+
+                    NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
+
+                    NimbatMirrorData.avatarColliders[i] = null;
+                }
+            }
+        }
+    }
+
+
     void DrawMirroredObjects()
     {
         //Dan said this line was important, this is to prevent an unity bug where handles somehow
         //do not draw if you dont do this first?
         Handles.Label(Vector3.zero,"");
 
-        if (NimbatMirrorData.mirrorContactsList == null)
+        if (NimbatMirrorData.vrcMirrorGroups == null)
         {
             return;
         }
 
-        foreach (NimbatMirrorObject mirrorObject in NimbatMirrorData.mirrorContactsList)
+        foreach (NimbatMirrorObject mirrorObject in NimbatMirrorData.vrcMirrorGroups)
         {
             if (!mirrorObject.showInScene)
             {
                 continue;
             }
 
-            if (mirrorObject.vrcObject_Left.contact)
+            if (mirrorObject.vrcObject_NoMirror.gameObject)
             {
-                DrawContactHandle(mirrorObject.vrcObject_Left, Color.blue);
+                DrawNimbatObjectHandles(mirrorObject.vrcObject_NoMirror, Color.green);
             }
 
-            if (mirrorObject.vrcObject_Right.contact)
+            if (mirrorObject.vrcObject_Left.gameObject)
+            {                
+                DrawNimbatObjectHandles(mirrorObject.vrcObject_Left, Color.blue);
+            }
+
+            if (mirrorObject.vrcObject_Right.gameObject)
             {
-                DrawContactHandle(mirrorObject.vrcObject_Right, Color.red);
+                DrawNimbatObjectHandles(mirrorObject.vrcObject_Right, Color.red);
             }
         }
     }
 
-    void DrawContactHandle(NimbatVRCObjectBase vrcObject, Color color)
+    void DrawNimbatObjectHandles(NimbatVRCObjectBase vrcObject, Color color)
     {
         Color defaultGUIColor = Handles.color;
 
-        if (Selection.activeGameObject == vrcObject.contact.gameObject)
-        {
+        if (Selection.activeGameObject == vrcObject.gameObject)
+        {            
             return;
         }
 
+        //--filtering depending on objects enabled in cutie inspector tab
+        switch (vrcObject.vrcObjectType)
+        {
+            case VRCObjectType.Collider:
+                if (!tabColliders)
+                    return;
+                break;
+            case VRCObjectType.Contact:
+                if (!tabContacts)
+                    return;
+                break;
+            case VRCObjectType.PhysBone:
+                if (!tabPhysbones)
+                    return;
+                break;
+        }
+
+        //--draws the icon
+        Handles.Label(vrcObject.getPosition, vrcObject.iconTexture);
+
         Handles.color = color;
-        
-        if(vrcObject.contact.shapeType == ContactBase.ShapeType.Sphere)
+
+        switch (vrcObject.vrcObjectType)
         {
-            HandlesUtil.DrawWireSphere(NimbatFunctions.GetContactPosition(vrcObject.contact), vrcObject.vrcRadius_Scaled);
-        }
-        else
-        {
-            HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, vrcObject.contact.height * vrcObject.absoluteScale, vrcObject.vrcRadius_Scaled);
-        }
+            case VRCObjectType.Contact:
+
+                if (vrcObject.contact.shapeType == ContactBase.ShapeType.Sphere)
+                {
+                    HandlesUtil.DrawWireSphere(NimbatFunctions.GetContactPosition(vrcObject.contact), vrcObject.vrcRadius_Scaled);
+                }
+                else
+                {
+                    HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, vrcObject.contact.height * vrcObject.absoluteScale, vrcObject.vrcRadius_Scaled);
+                }
+
+
+                break;
+            case VRCObjectType.Collider:
+
+                if (vrcObject.collider.shapeType  == VRCPhysBoneColliderBase.ShapeType.Sphere)
+                {
+                    HandlesUtil.DrawWireSphere(vrcObject.getPosition, vrcObject.vrcRadius_Scaled);
+                    Handles.color = new Color(0,1,0,.4f);
+                    HandlesUtil.DrawWireSphere(vrcObject.getPosition, vrcObject.vrcRadius_Scaled -.01f);
+                    Handles.color = color;
+                }
+                else if (vrcObject.collider.shapeType == VRCPhysBoneColliderBase.ShapeType.Capsule)
+                {
+                    HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, (vrcObject.collider.height)* vrcObject.absoluteScale, vrcObject.vrcRadius_Scaled);
+                    Handles.color = new Color(0, 1, 0, .4f);
+                    HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, (vrcObject.collider.height * vrcObject.absoluteScale - .003f), vrcObject.vrcRadius_Scaled -.003f);
+                    Handles.color = color;
+                }
+                break;
+            case VRCObjectType.PhysBone:
+
+                HandlesUtil.DrawWireSphere(vrcObject.getPosition, vrcObject.vrcRadius_Scaled);
+
+                if (vrcObject.physBone.rootTransform)
+                {
+                    Transform[] physboneChilds = vrcObject.physBone.rootTransform.GetComponentsInChildren<Transform>();
+
+                    foreach(Transform child in physboneChilds)
+                    {
+                        if(child.childCount >= 1)
+                            for(int i = 0; i< child.childCount; i++)
+                            {
+                                Handles.DrawLine(child.position, child.GetChild(i).position);
+                            }
+                    }
+                }
+
+                break;
+        }                
 
         if (!NimbatCore.ctrlDown)
         {
@@ -331,13 +580,13 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
 
         if (Handles.Button(
-            NimbatFunctions.GetContactPosition(vrcObject.contact),
+            vrcObject.getPosition,
             Quaternion.identity,
             .01f,
-            vrcObject.contact.radius * vrcObject.absoluteScale,
+            vrcObject.vrcRadius_Scaled,
             Handles.SphereHandleCap))
         {
-            Selection.activeGameObject = vrcObject.contact.gameObject;
+            Selection.activeGameObject = vrcObject.gameObject;
         }
 
 
@@ -348,20 +597,20 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     {
         //--keep an eye on this in case it is slow
 
-        if(NimbatMirrorData.mirrorContactsList == null || NimbatMirrorData.mirrorContactsList.Count <= 0)
+        if(NimbatMirrorData.vrcMirrorGroups == null || NimbatMirrorData.vrcMirrorGroups.Count <= 0)
         {
             RefreshVRCObjectData();
         }
 
-        for (int i = 0; i< NimbatMirrorData.mirrorContactsList.Count; i++)
+        for (int i = 0; i< NimbatMirrorData.vrcMirrorGroups.Count; i++)
         {
-            if(NimbatMirrorData.mirrorContactsList[i].vrcObject_Left.contact.gameObject == targetObject)
+            if(NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.contact.gameObject == targetObject)
             {
-                return NimbatMirrorData.mirrorContactsList[i].vrcObject_Right.contact.gameObject;
+                return NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.contact.gameObject;
             }
-            if (NimbatMirrorData.mirrorContactsList[i].vrcObject_Right.contact.gameObject == targetObject)
+            if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.contact.gameObject == targetObject)
             {
-                return NimbatMirrorData.mirrorContactsList[i].vrcObject_Left.contact.gameObject;
+                return NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.contact.gameObject;
             }
         }
         return null;
@@ -369,24 +618,61 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
     public NimbatMirrorObject GetMirrorObjectDataFromGameObject(GameObject targetObject)
     {
-        if (NimbatMirrorData.mirrorContactsList == null || NimbatMirrorData.mirrorContactsList.Count <= 0)
+        if (NimbatMirrorData.vrcMirrorGroups == null || NimbatMirrorData.vrcMirrorGroups.Count <= 0)
         {
             RefreshVRCObjectData();
         }
 
-        for (int i = 0; i < NimbatMirrorData.mirrorContactsList.Count; i++)
+        for (int i = 0; i < NimbatMirrorData.vrcMirrorGroups.Count; i++)
         {
-            if (NimbatMirrorData.mirrorContactsList[i].vrcObject_Left.contact)
-                if (NimbatMirrorData.mirrorContactsList[i].vrcObject_Left.contact.gameObject == targetObject)
+            if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.contact)
+                if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.contact.gameObject == targetObject)
                 {
-                    return NimbatMirrorData.mirrorContactsList[i];
+                    return NimbatMirrorData.vrcMirrorGroups[i];
                 }
-            if(NimbatMirrorData.mirrorContactsList[i].vrcObject_Right.contact)
-                if (NimbatMirrorData.mirrorContactsList[i].vrcObject_Right.contact.gameObject == targetObject)
+            if(NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.contact)
+                if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.contact.gameObject == targetObject)
                 {
-                    return NimbatMirrorData.mirrorContactsList[i];
+                    return NimbatMirrorData.vrcMirrorGroups[i];
                 }
         }
         return null;
+    }
+
+
+    public void SetFilterObject(VRCObjectType objectType, bool additive)
+    {
+        switch (objectType)
+        {
+            case VRCObjectType.PhysBone:
+                tabPhysbones = true;
+                tabContacts = false;
+                tabColliders = false;
+
+                _tabPhysbones = true;
+                _tabContacts = false;
+                _tabColliders = false;
+
+                break;
+            case VRCObjectType.Collider:
+                tabPhysbones = false;
+                tabContacts = false;
+                tabColliders = true;
+
+                _tabPhysbones = false;
+                _tabContacts = false;
+                _tabColliders = true;
+                break;
+            case VRCObjectType.Contact:
+                tabPhysbones = false;
+                tabContacts = true;
+                tabColliders = false;
+
+                _tabPhysbones = false;
+                _tabContacts = true;
+                _tabColliders = false;
+                break;
+        }
+
     }
 }

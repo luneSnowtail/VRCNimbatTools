@@ -538,7 +538,7 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
         Vector3 localPos;
         Vector3 localRot;
 
-        NimbatFunctions.MirrorTransforms(mirrorContact.transform, activeContact.transform, out localPos, out localRot);
+        NimbatFunctions.MirrorTransforms(activeContact.transform, out localPos, out localRot);
 
         mirrorContact.transform.localPosition = localPos;
         mirrorContact.transform.localRotation = Quaternion.Euler(localRot);

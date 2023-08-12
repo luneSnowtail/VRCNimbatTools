@@ -382,7 +382,11 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
     {       
         activePhysbone.radiusCurve.AddKey(0, 1);
         activePhysbone.radiusCurve.AddKey(1, 1);
-        activePhysbone.radius = .0001f;
+
+        if(physBone_radius <= 0)
+        {
+            activePhysbone.radius = .0001f;
+        }
 
         tempCurve = activePhysbone.radiusCurve;
 

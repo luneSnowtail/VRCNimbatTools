@@ -236,14 +236,12 @@ public class NimbatFunctions
         return mirroredPosition;
     }
 
-
-
     /// <summary>
     /// Makes one transform match the target transform but mirrored (in local data)
     /// </summary>
     /// <param name="currentTransform">the transform we want to mirror</param>
     /// <param name="referenceTransform">the reference transform we are copying data from</param>
-    static public void MirrorTransforms(Transform currentTransform, Transform referenceTransform, out Vector3 mirrorPosition, out Vector3 mirrorRotation)
+    static public void MirrorTransforms(Transform referenceTransform, out Vector3 mirrorPosition, out Vector3 mirrorRotation)
     {
         mirrorPosition = referenceTransform.localPosition;
         mirrorPosition.x *= -1;
@@ -263,6 +261,19 @@ public class NimbatFunctions
         return tagName.Substring(0, tagName.Length - 1);
     }
 
+
+    static public Transform GetTransformInChild(GameObject parent, string name)
+    {
+        Transform[] childs = parent.GetComponentsInChildren<Transform>();
+
+        for(int i = 0; i< childs.Length; i++)
+        {
+            if (childs[i].name == name)
+                return childs[i].transform;
+        }
+
+        return GameObject.Find(name).transform;
+    }
 
 
     #region ======================================= Prefab functinos

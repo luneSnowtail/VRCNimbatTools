@@ -28,6 +28,14 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
 
     #endregion
 
+    public override bool IsWindowValid()
+    {
+        if(selectedObject.vrcObjectType == VRCObjectType.Collider)
+        {
+            return true;
+        }
+        return false;
+    }
 
     void OnSelectionChanged()
     {

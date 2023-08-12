@@ -46,16 +46,71 @@ public enum ContactType
 /// </summary>
 public struct NimbatVRCObjectBase
 {
+    static Texture2D _icon_contact;
+    static Texture2D _icon_collider;
+    static Texture2D _icon_physbone;
+
+    static Texture2D icon_contact
+    {
+        get
+        {
+            if (!_icon_contact)
+            {
+                _icon_contact = (Texture2D)Resources.Load("icon_contact");
+            }
+            return _icon_contact;
+        }
+    }
+    static Texture2D icon_collider
+    {
+        get
+        {
+            if (!_icon_collider)
+            {
+                _icon_collider = (Texture2D)Resources.Load("icon_collider");
+            }
+            return _icon_collider;
+        }
+    }
+    static Texture2D icon_physbone
+    {
+        get
+        {
+            if (!_icon_physbone)
+            {
+                _icon_physbone = (Texture2D)Resources.Load("icon_physbone");
+            }
+            return _icon_physbone;
+        }
+    }
+
+
     public VRCObjectType vrcObjectType { get; private set; }
     public MirrorTypes mirrorType { get; private set; }
     public ContactType contactType { get; private set; }
+    public Texture2D iconTexture
+    {
+        get
+        {
+            switch(vrcObjectType)
+            {
+                case VRCObjectType.Collider:
+                    return icon_collider;
+                case VRCObjectType.Contact:
+                    return icon_contact;
+                case VRCObjectType.PhysBone:
+                    return icon_physbone;
+            }
+            return null;
+        }
+    }
 
     public void ClearData()
     {
         vrcObjectType = VRCObjectType.None;
         mirrorType = MirrorTypes.None;
         contactType = ContactType.None;
-
+       
         _collider = null;
         _gameObject = null;
         _physBone = null;
@@ -68,7 +123,7 @@ public struct NimbatVRCObjectBase
         absoluteScale = NimbatFunctions.GetAbsoluteScale(transform.gameObject);
         mirrorType = NimbatFunctions.GetNameMirrorType(transform.name);
     }
-
+    
 
     /// <summary>
     /// returns the world position plus vrc object offset
@@ -82,6 +137,10 @@ public struct NimbatVRCObjectBase
                 case VRCObjectType.Contact:
                     return _contact.transform.position + _contact.transform.TransformDirection(_contact.position * absoluteScale);                    
                 case VRCObjectType.PhysBone:
+                    if (_physBone.rootTransform)
+                    {
+                        return _physBone.rootTransform.position;
+                    }
                     return _physBone.transform.position;
                 case VRCObjectType.Collider:
                     return _collider.transform.position + _collider.transform.TransformDirection(_collider.position * absoluteScale);
@@ -147,6 +206,8 @@ public struct NimbatVRCObjectBase
                     return _contact.radius * absoluteScale;
                     
                 case VRCObjectType.PhysBone:
+                    if (_physBone.rootTransform) 
+                        return _physBone.radius *  NimbatFunctions.GetAbsoluteScale(_physBone.rootTransform.gameObject);
                     return _physBone.radius * absoluteScale;
 
                 case VRCObjectType.Collider:
@@ -169,7 +230,7 @@ public struct NimbatVRCObjectBase
                     break;
             }
         }
-    }
+    }    
 
     /// <summary>
     /// Gets the name of the object set in here
@@ -205,26 +266,15 @@ public struct NimbatVRCObjectBase
     {
         get
         {
-            switch (vrcObjectType)
-            {
-                case VRCObjectType.Collider:
-                    return _collider.gameObject;
-                case VRCObjectType.Contact:
-                    return _contact.gameObject;
-                case VRCObjectType.PhysBone:
-                    return _physBone.gameObject;
-                case VRCObjectType.EmptyGO:
-                    return _gameObject;
-                case VRCObjectType.None:
-                    return null;
-            }
-            return null;
+            return _gameObject;
         }
         set
         {
             ClearData();
             if (value != null)            
             {
+
+
                 UpdateVRCData(value.transform);
                 vrcObjectType = VRCObjectType.EmptyGO;            
             }
@@ -246,6 +296,11 @@ public struct NimbatVRCObjectBase
             {
                 UpdateVRCData(value.transform);
                 vrcObjectType = VRCObjectType.PhysBone;
+                _gameObject = value.gameObject;
+            }
+            else
+            {
+                _gameObject = null;
             }
             _physBone = value;
         }
@@ -265,6 +320,11 @@ public struct NimbatVRCObjectBase
             {
                 UpdateVRCData(value.transform);
                 vrcObjectType = VRCObjectType.Collider;
+                _gameObject = value.gameObject;
+            }
+            else
+            {
+                _gameObject = null;
             }
             _collider = value;
         }
@@ -295,6 +355,11 @@ public struct NimbatVRCObjectBase
                 {
                     contactType = ContactType.Sender;
                 }                
+                _gameObject = value.gameObject;
+            }
+            else
+            {
+                _gameObject = null;
             }
             _contact = value;
         }

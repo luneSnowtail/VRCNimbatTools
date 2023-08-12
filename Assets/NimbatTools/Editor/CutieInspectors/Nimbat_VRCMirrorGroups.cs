@@ -231,12 +231,22 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     /// </summary>
     public void RefreshVRCObjectData()
     {
+        if(!Nimbat_AvatarSettings.sceneHasVRCAvatars || !Nimbat_AvatarSettings.selectedAvatar)
+        {
+            return;
+        }
+
         FindVRCObjects();
         CreateMirrorGroups();
     }
 
     void FindVRCObjects()
     {        
+        if(Nimbat_AvatarSettings.selectedAvatar == null || !Nimbat_AvatarSettings.sceneHasVRCAvatars)
+        {
+            return;
+        }
+
         NimbatMirrorData.avatarContacts = new List<ContactBase>(Nimbat_AvatarSettings.selectedAvatar.gameObject.GetComponentsInChildren<ContactBase>());
         NimbatMirrorData.avatarColliders = new List<VRCPhysBoneColliderBase>(Nimbat_AvatarSettings.selectedAvatar.gameObject.GetComponentsInChildren<VRCPhysBoneColliderBase>());
         NimbatMirrorData.avatarPhysbones = new List<VRCPhysBoneBase>(Nimbat_AvatarSettings.selectedAvatar.gameObject.GetComponentsInChildren<VRCPhysBoneBase>());

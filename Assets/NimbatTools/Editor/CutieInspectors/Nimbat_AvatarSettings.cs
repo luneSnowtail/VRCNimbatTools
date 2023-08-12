@@ -9,6 +9,11 @@ public class Nimbat_AvatarSettings : NimbatCutieInspectorWindow
     public delegate void NewAvatarSelected();
     static public NewAvatarSelected OnNewAvatarSelected;
 
+    /// <summary>
+    /// if no avatars are in the scene the entire thing would explode, so its good to check for this first
+    /// </summary>
+    static public bool sceneHasVRCAvatars;      
+
     List<string> avatarList;
     VRCAvatarDescriptor[] avatars;
     int selectedAvatarId;
@@ -32,10 +37,11 @@ public class Nimbat_AvatarSettings : NimbatCutieInspectorWindow
 
     public override void CutieInspectorContent()
     {
-        if(avatars == null || avatars.Length <= 0)
+        if(avatars == null || avatars.Length <= 0 || !selectedAvatar)
         {
             FindAvatars();
         }
+
         GUILayout.Label("avatars found " + avatars.Length.ToString());
 
         selectedAvatarId = EditorGUILayout.Popup(selectedAvatarId, avatarList.ToArray());
@@ -62,7 +68,15 @@ public class Nimbat_AvatarSettings : NimbatCutieInspectorWindow
         avatarList = new List<string>();
         avatars = Editor.FindObjectsOfType<VRCAvatarDescriptor>();
 
-        for(int i = 0; i < avatars.Length; i++)
+        if(avatars.Length <= 0 || avatars == null)
+        {
+            sceneHasVRCAvatars = false;
+            return;
+        }
+
+        sceneHasVRCAvatars = true;
+
+        for (int i = 0; i < avatars.Length; i++)
         {
             avatarList.Add(avatars[i].gameObject.name);
         }
@@ -75,7 +89,11 @@ public class Nimbat_AvatarSettings : NimbatCutieInspectorWindow
 
     void SelectAvatarID(int id)
     {
-        selectedAvatar = avatars[id];
+        selectedAvatarId = Mathf.Clamp( id,0, avatars.Length-1);
+        
+        
+
+        selectedAvatar = avatars[selectedAvatarId];
         selectedAvatarAnimator = selectedAvatar.GetComponent<Animator>();
         selectedAvatarGameObject = selectedAvatar.gameObject;
     }

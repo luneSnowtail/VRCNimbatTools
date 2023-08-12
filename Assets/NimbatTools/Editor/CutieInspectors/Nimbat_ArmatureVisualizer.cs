@@ -44,6 +44,11 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
 
     public override void CutieInspectorHandles()
     {
+        if(!Nimbat_AvatarSettings.sceneHasVRCAvatars || !Nimbat_AvatarSettings.selectedAvatar)
+        {
+            return;
+        }
+
         DrawArmatureHandles();
     }
 
@@ -55,6 +60,11 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
 
     void FindAvatarData()
     {
+        if(!Nimbat_AvatarSettings.sceneHasVRCAvatars || !Nimbat_AvatarSettings.selectedAvatar)
+        {
+            return;
+        }
+
         vrcAvatarAnimator = Nimbat_AvatarSettings.selectedAvatarAnimator;
         baseTransform = vrcAvatarAnimator.GetBoneTransform(HumanBodyBones.Hips);
 
@@ -112,11 +122,13 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
     }
 
     void DrawArmatureHandles()
-    {
+    {        
         if (!baseTransform)
         {
             FindAvatarData();
         }
+
+        
 
         Handles.Label(Vector3.zero, "");
 

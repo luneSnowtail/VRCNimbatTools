@@ -71,6 +71,7 @@ public class Nimbat_SelectionData
                 if (selectedVRCNimbatObject.mirrorType != MirrorTypes.None)
                 {
                     selectionHasMirrorSuffix = true;
+
                     nimbatMirrorData = NimbatCore.vrcMirrorGroups.GetMirrorObjectDataFromGameObject(value);
                     if (nimbatMirrorData == null)
                     {

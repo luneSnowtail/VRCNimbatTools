@@ -12,10 +12,14 @@ using VRC.Dynamics;
 public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
 {
     NimbatVRCObjectBase selectedVRCObject;
+    NimbatMirrorObject mirrorGroup;
+
     GameObject activeObject;
 
     GameObject mirrorObject;    
-    bool mirrorPosition;
+    
+    bool mirrorTransforms;
+    
 
     static public List<ContactBase> avatarContacts;
     static public List<NimbatMirrorObject> mirrorContactsList;
@@ -52,19 +56,20 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
     {
         selectedVRCObject = Nimbat_SelectionData.selectedVRCNimbatObject;
         activeObject = selectedVRCObject.gameObject;
+        mirrorGroup = Nimbat_SelectionData.nimbatMirrorData;
 
-        if (Nimbat_SelectionData.nimbatMirrorData != null)
+        switch (selectedVRCObject.mirrorType)
         {
-            if (Nimbat_SelectionData.selectedVRCNimbatObject.mirrorType == MirrorTypes.Left)
-            {
-                mirrorObject = Nimbat_SelectionData.nimbatMirrorData.vrcObject_Right.gameObject;
-            }
-            else
-            {
-                mirrorObject = Nimbat_SelectionData.nimbatMirrorData.vrcObject_Left.gameObject;
-            }
-        }
-
+            case MirrorTypes.Left:
+                mirrorObject = mirrorGroup.vrcObject_Right.gameObject;
+                break;
+            case MirrorTypes.Right:
+                mirrorObject = mirrorGroup.vrcObject_Left.gameObject;
+                break;
+            case MirrorTypes.None:
+                mirrorObject = null;
+                break;
+        }        
     }
 
     public override void CutieInspectorContent()
@@ -86,7 +91,7 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
             return;
         }
 
-        mirrorPosition = GUILayout.Toggle(mirrorPosition, " Mirror position");
+        mirrorTransforms = GUILayout.Toggle(mirrorTransforms, " Mirror position", EditorStyles.toggleGroup);
 
         if (GUILayout.Button("Copy VRC Object Data"))
         {
@@ -99,7 +104,7 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
         if (!activeObject)
             return;
 
-        if(mirrorPosition && mirrorObject)
+        if(mirrorTransforms && mirrorObject)
         {
             mirrorObject.transform.localPosition = NimbatFunctions.MirrorLocalPosition(activeObject.transform.localPosition);
         }
@@ -137,6 +142,9 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
         {
             case VRCObjectType.Contact:
                 CreateOrTransferMirrorContactData();
+                break;
+            case VRCObjectType.Collider:
+                CreateOrTransformMirrorColliderData();
                 break;
         }
     }
@@ -181,5 +189,27 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
         mirrorContactComponent.rotation = selectedVRCObject.contact.rotation;
         mirrorContactComponent.height = selectedVRCObject.contact.height;
 
+    }
+
+
+    void CreateOrTransformMirrorColliderData()
+    {
+        VRCPhysBoneColliderBase vrcCollider;
+
+        vrcCollider = mirrorObject.GetComponent<VRCPhysBoneColliderBase>();
+
+        //--we only create component if we did not found it
+        if (!vrcCollider)
+        {
+            vrcCollider = mirrorObject.AddComponent<VRCPhysBoneColliderBase>();
+        }
+
+        vrcCollider.radius = selectedVRCObject.collider.radius;
+        vrcCollider.height = selectedVRCObject.collider.height;
+        vrcCollider.shape = selectedVRCObject.collider.shape;
+        vrcCollider.shapeType = selectedVRCObject.collider.shapeType;
+        vrcCollider.insideBounds = selectedVRCObject.collider.insideBounds;
+        vrcCollider.position = selectedVRCObject.collider.position;
+        vrcCollider.rotation = selectedVRCObject.collider.rotation;
     }
 }

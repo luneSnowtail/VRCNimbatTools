@@ -102,6 +102,9 @@ public class NimbatCore : EditorWindow
     {
         handlesDefaultColor = Handles.color;
 
+        //--updates selected data to something this tool can understand
+        UpdateSelectionData();
+
         CutieInput();
 
         Handles.BeginGUI();
@@ -178,9 +181,6 @@ public class NimbatCore : EditorWindow
 
         //--this is the part that draws the main buttons and their cutie inspectors if enabled
         DrawMainCutieButtons();
-
-        //--updates selected data to something this tool can understand
-        UpdateSelectionData();
 
         //--if selection is compatible, we draw the additional settings here
         DrawCutieSettings();

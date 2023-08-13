@@ -273,8 +273,6 @@ public struct NimbatVRCObjectBase
             ClearData();
             if (value != null)            
             {
-
-
                 UpdateVRCData(value.transform);
                 vrcObjectType = VRCObjectType.EmptyGO;            
             }

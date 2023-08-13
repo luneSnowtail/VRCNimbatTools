@@ -425,7 +425,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
                         tempMirrorObject.vrcObject_Left.collider = NimbatMirrorData.avatarColliders[i];
                     }
 
-                    NimbatMirrorData.avatarPhysbones[i] = null;
+                    NimbatMirrorData.avatarColliders[i] = null;
 
                     for (int j = 0; j < NimbatMirrorData.avatarColliders.Count; j++)
                     {
@@ -614,13 +614,13 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
         for (int i = 0; i< NimbatMirrorData.vrcMirrorGroups.Count; i++)
         {
-            if(NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.contact.gameObject == targetObject)
+            if(NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject == targetObject)
             {
-                return NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.contact.gameObject;
+                return NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject;
             }
-            if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.contact.gameObject == targetObject)
+            if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject == targetObject)
             {
-                return NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.contact.gameObject;
+                return NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject;
             }
         }
         return null;
@@ -635,20 +635,19 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
         for (int i = 0; i < NimbatMirrorData.vrcMirrorGroups.Count; i++)
         {
-            if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.contact)
-                if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.contact.gameObject == targetObject)
+            if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject)
+                if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject == targetObject)
                 {
                     return NimbatMirrorData.vrcMirrorGroups[i];
                 }
-            if(NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.contact)
-                if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.contact.gameObject == targetObject)
+            if(NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject)
+                if (NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject == targetObject)
                 {
                     return NimbatMirrorData.vrcMirrorGroups[i];
                 }
         }
         return null;
     }
-
 
     public void SetFilterObject(VRCObjectType objectType, bool additive)
     {

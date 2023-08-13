@@ -16,6 +16,31 @@ public class Nimbat_About : NimbatCutieInspectorWindow
 
     public override void CutieInspectorContent()
     {
+
+        GUILayout.Label("Even when this tool is and will always be free, you can still support me at patreon", EditorStyles.wordWrappedLabel);
+
+        if (GUILayout.Button("Patreon"))
+        {
+            Application.OpenURL("https://patreon.com/nimbattools");
+        }
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Twitter"))
+        {
+            Application.OpenURL("https://twitter.com/lunesnowtail");
+        }
+        if (GUILayout.Button("Twitch"))
+        {
+            Application.OpenURL("https://twitch.tv/lunesnowtail");
+        }
+        if (GUILayout.Button("Linktree"))
+        {
+            Application.OpenURL("https://linktr.ee/lunesnowtail");
+        }
+
+
+        GUILayout.EndHorizontal();
+
         GUILayout.BeginVertical();
         GUILayout.Label("Special thanks to the cute beans:");
 

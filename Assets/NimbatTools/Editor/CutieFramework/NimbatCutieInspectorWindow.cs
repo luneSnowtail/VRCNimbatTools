@@ -162,15 +162,15 @@ public class NimbatCutieInspectorWindow
         }
 
 
-        GUI.Box(titleBoxRect , "", EditorStyles.helpBox);
-        expanded = EditorGUI.Foldout(titleFoldoutRect, expanded, "");
+        GUI.Box(titleBoxRect , string.Empty, EditorStyles.helpBox);
+        expanded = EditorGUI.Foldout(titleFoldoutRect, expanded, string.Empty);
         GUI.Label(titleTextPositionRect, title, EditorStyles.boldLabel);
 
 
         if (!expanded)
             return;
 
-        GUI.Box(contentBoxRect, "", EditorStyles.helpBox);
+        GUI.Box(contentBoxRect, string.Empty, EditorStyles.helpBox);
 
         GUILayout.BeginArea(contentRect);
 

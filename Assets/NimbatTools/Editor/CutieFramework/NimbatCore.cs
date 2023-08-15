@@ -220,25 +220,27 @@ public class NimbatCore : EditorWindow
     /// when selecting something, the settings are updated here
     /// </summary>
     static void UpdateSelectionData()
-    {       
-        if(selection_PreviousGameObject != Selection.activeGameObject)
+    {
+        if (selection_PreviousGameObject == Selection.activeGameObject)
         {
-            selection_PreviousGameObject = Selection.activeGameObject;
-
-            if(selection_PreviousGameObject == null)
-            {                
-                nimbatOptions_transform.activeTransform = null;
-                Nimbat_SelectionData.activeSelectedGameobject = null;
-                
-                return;
-            }
-            else
-            {
-                Nimbat_SelectionData.activeSelectedGameobject = Selection.activeGameObject;
-                nimbatOptions_transform.activeTransform = Selection.activeGameObject.transform;               
-            }                        
+            return;
         }
 
+
+        selection_PreviousGameObject = Selection.activeGameObject;
+        if(selection_PreviousGameObject == null)
+        {                
+            nimbatOptions_transform.activeTransform = null;
+            Nimbat_SelectionData.activeSelectedGameobject = null;
+            
+            return;
+        }
+        else
+        {
+            Nimbat_SelectionData.activeSelectedGameobject = Selection.activeGameObject;
+            nimbatOptions_transform.activeTransform = Selection.activeGameObject.transform;               
+        }                        
+        
     }
 
     /// <summary>
@@ -251,13 +253,15 @@ public class NimbatCore : EditorWindow
 
         for (int i = 0; i< cutieInspectorWindows.Count; i++)
         {
-            if (DrawButton(cutieInspectorWindows[i].mainButtonIcon))
+            var cutieWindow = cutieInspectorWindows[i];
+
+            if (DrawButton(cutieWindow.mainButtonIcon))
             {
-                cutieInspectorWindows[i].isEnabled = !cutieInspectorWindows[i].isEnabled;
+                cutieWindow.isEnabled = !cutieWindow.isEnabled;
             }
 
 
-            if (cutieInspectorWindows[i].isEnabled)
+            if (cutieWindow.isEnabled)
             {
                 //--sets height alligned to the first button pressed
                 if (!firstMenuOpen)
@@ -266,10 +270,10 @@ public class NimbatCore : EditorWindow
                     cutieInspectorPositions.Set(cutieInspectorPositions.x, ((buttonSize + buttonMargin) * i) + originMargin);
                 }
 
-                cutieInspectorWindows[i].position = cutieInspectorPositions;
-                cutieInspectorWindows[i].DrawCutieInspectorWindow();
+                cutieWindow.position = cutieInspectorPositions;
+                cutieWindow.DrawCutieInspectorWindow();
 
-                cutieInspectorPositions.Set(cutieInspectorPositions.x, cutieInspectorWindows[i].heightEndMargin);
+                cutieInspectorPositions.Set(cutieInspectorPositions.x, cutieWindow.heightEndMargin);
             }
 
         }
@@ -286,20 +290,23 @@ public class NimbatCore : EditorWindow
 
         for(int i = 0; i< cutieEditorWindows.Count; i++)
         {
-            if (cutieEditorWindows[i].IsWindowValid())
+            if (!cutieEditorWindows[i].IsWindowValid())
             {
-                if (!firstEditorOpen)
-                {
-                    firstEditorOpen = true;
-                    cutieInspectorEditorPositions.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 300, SceneView.lastActiveSceneView.camera.pixelHeight - 10);
-                }
-
-                cutieEditorWindows[i].isEnabled = true;
-                cutieEditorWindows[i].position = cutieInspectorEditorPositions;
-                cutieEditorWindows[i].DrawCutieInspectorWindow();
-
-                cutieInspectorEditorPositions.Set(cutieInspectorEditorPositions.x, cutieEditorWindows[i].heightEndMargin);
+                continue;
             }
+            
+            if (!firstEditorOpen)
+            {
+                firstEditorOpen = true;
+                cutieInspectorEditorPositions.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 300, SceneView.lastActiveSceneView.camera.pixelHeight - 10);
+            }
+
+            cutieEditorWindows[i].isEnabled = true;
+            cutieEditorWindows[i].position = cutieInspectorEditorPositions;
+            cutieEditorWindows[i].DrawCutieInspectorWindow();
+
+            cutieInspectorEditorPositions.Set(cutieInspectorEditorPositions.x, cutieEditorWindows[i].heightEndMargin);
+            
         }  
     }
 
@@ -313,15 +320,7 @@ public class NimbatCore : EditorWindow
         tempRect = new Rect(originMargin, originMargin + ((buttonSize + buttonMargin) * totalButtons), buttonSize, 20);
         totalButtons++;
 
-        
-        
-
-        if (GUI.Button(tempRect, buttonIcon, EditorStyles.toolbarButton))
-        {
-            return true;
-        }
-
-        return false;
+        return GUI.Button(tempRect, buttonIcon, EditorStyles.toolbarButton);
     }
 
     /// <summary>

@@ -121,7 +121,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
     {
         //--for some reason, if i dont draw this handle first, nothing else works
         //Dan said this line is very important, this is not a meme or a joke     
-        Handles.Label(Vector3.zero, "");
+        Handles.Label(Vector3.zero, string.Empty);
 
         if (!activePhysbone.rootTransform)
         {

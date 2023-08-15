@@ -25,9 +25,9 @@ public class Nimbat_About : NimbatCutieInspectorWindow
         }
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Twitter"))
+        if (GUILayout.Button("bsky"))
         {
-            Application.OpenURL("https://twitter.com/lunesnowtail");
+            Application.OpenURL("https://lunesnowtail.bsky.social");
         }
         if (GUILayout.Button("Twitch"))
         {
@@ -36,6 +36,10 @@ public class Nimbat_About : NimbatCutieInspectorWindow
         if (GUILayout.Button("Linktree"))
         {
             Application.OpenURL("https://linktr.ee/lunesnowtail");
+        }
+        if (GUILayout.Button("Twitter"))
+        {
+            Application.OpenURL("https://twitter.com/lunesnowtail");
         }
 
 

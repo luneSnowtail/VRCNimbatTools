@@ -116,7 +116,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
         GUILayout.EndHorizontal();
 
-        GUILayout.Label("", GUILayout.Height(2));
+        GUILayout.Label(string.Empty, GUILayout.Height(2));
 
         scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
@@ -179,10 +179,8 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
             if (NimbatMirrorData.vrcMirrorGroups[i].mirrorGroupValid)
             {
                 //--before drawing the button to select an object we make sure it exist
-                if (!NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject)
-                {
-                    GUI.enabled = false;
-                }
+                GUI.enabled = NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject;
+                                                    
                 if (GUILayout.Button("_L", GUILayout.Width(25), GUILayout.Height(groupHeight)))
                 {                
                     Selection.activeGameObject = NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Left.gameObject;
@@ -190,14 +188,13 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
                 GUI.enabled = true;
 
                 //--before drawing the button to select an object we make sure it exist
-                if (!NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject)
-                {
-                    GUI.enabled = false;
-                }
+                GUI.enabled = NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject;
+                
                 if (GUILayout.Button("_R", GUILayout.Width(25), GUILayout.Height(groupHeight)))
                 {                
                     Selection.activeGameObject = NimbatMirrorData.vrcMirrorGroups[i].vrcObject_Right.gameObject;
                 }
+
                 GUI.enabled = true;
             }
             else
@@ -213,7 +210,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         }
        GUILayout.EndScrollView();
 
-       GUILayout.Label("", GUILayout.Height(2));
+       GUILayout.Label(string.Empty, GUILayout.Height(2));
     }
     
 
@@ -273,58 +270,59 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         for (int i = 0; i < NimbatMirrorData.avatarContacts.Count; i++)
         {
             //--we only do operations if the space is not null
-            if (NimbatMirrorData.avatarContacts[i] != null)
+            if (NimbatMirrorData.avatarContacts[i] == null)
+                continue;
+            
+            if (NimbatFunctions.NameHasMirrorSuffix(NimbatMirrorData.avatarContacts[i].name, out isRightSide))
             {
-                if (NimbatFunctions.NameHasMirrorSuffix(NimbatMirrorData.avatarContacts[i].name, out isRightSide))
+                tempMirrorObject = new NimbatMirrorObject();
+                tempMirrorObject.groupName = NimbatFunctions.MirrorNameToNoSuffix(NimbatMirrorData.avatarContacts[i].name);
+
+                tempMirrorObjectName = NimbatFunctions.MirrorNameSuffix(NimbatMirrorData.avatarContacts[i].name);
+
+
+                if (isRightSide)
                 {
-                    tempMirrorObject = new NimbatMirrorObject();
-                    tempMirrorObject.groupName = NimbatFunctions.MirrorNameToNoSuffix(NimbatMirrorData.avatarContacts[i].name);
-
-                    tempMirrorObjectName = NimbatFunctions.MirrorNameSuffix(NimbatMirrorData.avatarContacts[i].name);
-
-
-                    if (isRightSide)
-                    {
-                        tempMirrorObject.vrcObject_Right.contact = NimbatMirrorData.avatarContacts[i];
-                    }
-                    else
-                    {
-                        tempMirrorObject.vrcObject_Left.contact = NimbatMirrorData.avatarContacts[i];
-                    }
-
-                    NimbatMirrorData.avatarContacts[i] = null;
-
-                    for (int j = 0; j < NimbatMirrorData.avatarContacts.Count; j++)
-                    {
-                        if (NimbatMirrorData.avatarContacts[j] != null)
-                            if (NimbatMirrorData.avatarContacts[j].name == tempMirrorObjectName)
-                            {
-                                if (isRightSide)
-                                {
-                                    tempMirrorObject.vrcObject_Left.contact = NimbatMirrorData.avatarContacts[j];
-                                }
-                                else
-                                {
-                                    tempMirrorObject.vrcObject_Right.contact = NimbatMirrorData.avatarContacts[j];
-                                }
-
-                                NimbatMirrorData.avatarContacts[j] = null;
-                            }
-                    }
-
-                    tempMirrorObject.mirrorGroupValid = true;
-                    NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
+                    tempMirrorObject.vrcObject_Right.contact = NimbatMirrorData.avatarContacts[i];
                 }
                 else
                 {
-                    tempMirrorObject = new NimbatMirrorObject();
-                    tempMirrorObject.SetContact(NimbatMirrorData.avatarContacts[i]);
-
-                    NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
-
-                    NimbatMirrorData.avatarContacts[i] = null;
+                    tempMirrorObject.vrcObject_Left.contact = NimbatMirrorData.avatarContacts[i];
                 }
+
+                NimbatMirrorData.avatarContacts[i] = null;
+
+                for (int j = 0; j < NimbatMirrorData.avatarContacts.Count; j++)
+                {
+                    if (NimbatMirrorData.avatarContacts[j] != null)
+                        if (NimbatMirrorData.avatarContacts[j].name == tempMirrorObjectName)
+                        {
+                            if (isRightSide)
+                            {
+                                tempMirrorObject.vrcObject_Left.contact = NimbatMirrorData.avatarContacts[j];
+                            }
+                            else
+                            {
+                                tempMirrorObject.vrcObject_Right.contact = NimbatMirrorData.avatarContacts[j];
+                            }
+
+                            NimbatMirrorData.avatarContacts[j] = null;
+                        }
+                }
+
+                tempMirrorObject.mirrorGroupValid = true;
+                NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
             }
+            else
+            {
+                tempMirrorObject = new NimbatMirrorObject();
+                tempMirrorObject.SetContact(NimbatMirrorData.avatarContacts[i]);
+
+                NimbatMirrorData.vrcMirrorGroups.Add(tempMirrorObject);
+
+                NimbatMirrorData.avatarContacts[i] = null;
+            }
+            
         }
     }
 
@@ -465,7 +463,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     {
         //Dan said this line was important, this is to prevent an unity bug where handles somehow
         //do not draw if you dont do this first?
-        Handles.Label(Vector3.zero,"");
+        Handles.Label(Vector3.zero,string.Empty);
 
         if (NimbatMirrorData.vrcMirrorGroups == null)
         {

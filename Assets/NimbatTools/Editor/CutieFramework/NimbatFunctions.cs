@@ -68,12 +68,26 @@ public class NimbatFunctions
         return baseScale;
     }
 
+    #region ============================ Name mirroring
+
     /// <summary>
     /// It receives a name string and removes either _L or _R from the end of the name and returns it
     /// </summary>        
     static public string MirrorNameToNoSuffix(string objectName)
     {
+
+        if (objectName.Contains("Left"))
+        {
+            return objectName.Replace("Left",string.Empty);
+        }
+        if (objectName.Contains("Right"))
+        {
+            return objectName.Replace("Right", string.Empty);
+        }
+
         return objectName.Substring(0, objectName.Length - 2);
+
+        
     }
 
     /// <summary>
@@ -81,23 +95,50 @@ public class NimbatFunctions
     /// </summary>        
     static public string MirrorNameSuffix(string objectName)
     {
-        bool isRightSide;
+        bool isRightSide = false;
+        bool fullWord = false;
         string mirrorName;
 
-        if (NameHasMirrorSuffix(objectName, out isRightSide))
+        if(objectName.Contains("Left"))
         {
-            mirrorName = MirrorNameToNoSuffix(objectName);
+            fullWord = true;
+            isRightSide = false;
+        }
+        if (objectName.Contains("Right"))
+        {
+            fullWord = true;
+            isRightSide = true;
+        }
 
+        if (fullWord)
+        {
             if (isRightSide)
             {
-                mirrorName += "_L";
+                return objectName.Replace("Right", "Left");
             }
             else
             {
-                mirrorName += "_R";
+                return objectName.Replace("Left", "Right");
             }
-            return mirrorName;
         }
+        else
+        {
+            if (NameHasMirrorSuffix(objectName, out isRightSide))
+            {
+                mirrorName = MirrorNameToNoSuffix(objectName);
+
+                if (isRightSide)
+                {
+                    mirrorName += "_L";
+                }
+                else
+                {
+                    mirrorName += "_R";
+                }
+                return mirrorName;
+            }
+        }
+
         return objectName;
     }
 
@@ -106,13 +147,28 @@ public class NimbatFunctions
     /// the out bool lets us know which side it found
     /// </summary>        
     static public bool NameHasMirrorSuffix(string objectName, out bool isRight)
-    {        
+    {
+
+        //--check for full left or right words here
+        if (objectName.ToLower().Contains("left"))
+        {
+            isRight = false;
+            return true;
+        }
+        else if (objectName.ToLower().Contains("right"))
+        {
+            isRight = true;
+            return true;
+        }
+
+        //--make sure string is not null or empty
         if(objectName.Length < 2 || objectName == null)
         {
             isRight = false;
             return false;
         }
 
+        //--look for _L or _R at the end
         string suffix = objectName.Substring(objectName.Length - 2);
 
         if (suffix.Contains("_L"))
@@ -136,6 +192,17 @@ public class NimbatFunctions
     /// </summary>    
     static public MirrorTypes GetNameMirrorType(string objectName)
     {
+        //--check for full left or right words here
+        if (objectName.ToLower().Contains("left"))
+        {
+            return MirrorTypes.Left;
+        }
+        else if (objectName.ToLower().Contains("right"))
+        {
+            return MirrorTypes.Right;
+        }
+
+        //--check for _L or _R
         string suffix = objectName.Substring(objectName.Length - 2);
 
         if (suffix.Contains("_L"))
@@ -147,8 +214,11 @@ public class NimbatFunctions
         {
             return MirrorTypes.Right;
         }
+
         return MirrorTypes.None;
     }
+
+    #endregion
 
     /// <summary>
     /// rotates a vector in the defined axis by the defined magnitude

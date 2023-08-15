@@ -130,7 +130,7 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
 
         
 
-        Handles.Label(Vector3.zero, "");
+        Handles.Label(Vector3.zero, string.Empty);
 
         
         foreach(NimbatBone bone in humanoidBones)

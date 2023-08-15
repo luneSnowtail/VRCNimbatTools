@@ -4,49 +4,6 @@ using UnityEngine;
 using UnityEditor;
 using VRC.Dynamics;
 
-/*
-/// <summary>
-/// Default Vrchat tag values
-/// </summary>
-public enum VRCDefaultTags
-{
-    Custom,
-    Head,
-    Torso,
-    Hand,
-    HandL,
-    HandR,
-    Foot,
-    FootL,
-    FootR,
-    Finger,
-    FingerL,
-    FingerR,
-    FingerIndex,
-    FingerMiddle,
-    FingerRing,
-    FingerLittle,
-    FingerIndexL,
-    FingerMiddleL,
-    FingerRingL,
-    FingerLittleL,
-    FingerIndexR,
-    FingerMiddleR,
-    FingerRingR,
-    FingerLittleR,
-};
-
-/// <summary>
-/// Struct used to draw the tag labels in the cutie inspector
-/// </summary>
-[System.Serializable]
-public struct Tag
-{
-    public VRCDefaultTags defaultTags;
-    public string tagName;
-    public bool hasMirrorSuffix;
-}
-*/
 
 /// <summary>
 /// Class in charge of showing editor handles for editing contact properties faster
@@ -54,24 +11,15 @@ public struct Tag
 public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 {
     NimbatVRCObjectBase selectedVRCObject;
-    static NimbatVRCObjectBase mirroredVRCObject;
+    
+    bool toggleHeightHandle = true;
+    bool toggleRadiusHandle = true;
 
-    static bool toggleHeightHandle = true;
-    static bool toggleRadiusHandle = true;
-
-    static bool toggleOffsetEditing;
+    bool toggleOffsetEditing;
     bool toggleOffsetEditingFirstTime;
 
     static ContactBase activeContact;
     float newRadius;
-
-    /*
-    static ContactReceiver activeReceiver;
-    static ContactType activeContactType;
-    static ContactBase mirrorContact;
-    static List<Tag> tags;  
-    static VRCDefaultTags defaultTempTag;
-    */
 
     //--Data for Handles
     Vector3 capsuleDirection;
@@ -80,9 +28,7 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 
     //--data for offset handles
     Vector3 localOffset;
-    Quaternion transformRotation;
     Quaternion finalRotation;
-    Quaternion offsetRotation;
 
     #region ============================ constructor / destructor
     public Nimbat_ContactEditor()
@@ -133,121 +79,6 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
                 selectedVRCObject.contact.rotation = Quaternion.Euler(Vector3.zero);
             }
         }
-
-        #region ============ OLD MIRROR DATA
-        /*
-        GUILayout.BeginHorizontal();
-
-        if (hasMirrorSuffix)
-        {
-            if (!hasMirrorData)
-            {
-                if(GUILayout.Button("Create Mirror Contact"))
-                {
-                    CreateOrTransferMirrorData();
-                }
-                
-            }
-            else
-            {
-                mirrorRadius = GUILayout.Toggle(mirrorRadius, "Mirror radius");
-                mirrorPosition = GUILayout.Toggle(mirrorPosition, "Mirror position");
-            }
-        }        
-
-        GUILayout.EndHorizontal();
-        */
-        #endregion
-
-        //--this editor (and every other) were going to handle the transfer to mirror
-        //  individually but i decided its best to have only one editor in charge of mirror stugg
-
-        #region ================ OLD TAG DATA, prob delete
-
-        /*
-        GUILayout.BeginHorizontal();
-
-        GUILayout.Label("=== Tags ===", EditorStyles.miniLabel);
-        if(GUILayout.Button("Add"))
-        {            
-            activeContact.collisionTags.Add("");
-            tags.Add(new Tag());
-        }
-
-        GUILayout.EndHorizontal();
-
-        UpdateTags();
-        #region ========================= Draw tags
-
-        for (int i = 0; i< tags.Count; i++)
-        {
-            GUILayout.BeginHorizontal();
-
-            Tag tempTag = new Tag();
-            tempTag = tags[i];
-
-
-            EditorGUILayout.EnumPopup("", defaultTempTag, GUILayout.Width(50), GUILayout.Height(20));
-            tempTag.tagName = GUILayout.TextField(tags[i].tagName, GUILayout.Width(120), GUILayout.Height(20));
-            tempTag.hasMirrorSuffix = GUILayout.Toggle(tempTag.hasMirrorSuffix, "Mir", EditorStyles.toolbarButton);
-            tags[i] = tempTag;
-
-            if(GUILayout.Button("x", EditorStyles.toolbarButton))
-            {
-                tags.RemoveAt(i);
-                activeContact.collisionTags.RemoveAt(i);
-            }
-
-
-            GUILayout.EndHorizontal();     
-        }
-
-        #endregion
-
-        if(selectedVRCObject.contactType == ContactType.Receiver)
-        {
-            GUILayout.Label("", EditorStyles.miniLabel);
-            GUILayout.Label("=== Receiver Tag Data ===", EditorStyles.miniLabel);
-
-            GUILayout.BeginHorizontal();
-
-            
-            activeReceiver.receiverType = (ContactReceiver.ReceiverType) EditorGUILayout.EnumPopup("", activeReceiver.receiverType, GUILayout.Width(70), GUILayout.Height(20));            
-            activeReceiver.parameter = GUILayout.TextField(activeReceiver.parameter, GUILayout.Width(150), GUILayout.Height(20));
-
-            GUILayout.EndHorizontal();
-        }
-        else
-        {
-
-        }
-
-        if (!hasMirrorData)
-        {
-            GUI.enabled = false;
-        }
-        else
-        {
-            GUI.enabled = true;
-        }
-
-        
-
-        if(GUILayout.Button("Copy Tag Data to Mirror"))
-        {
-            CreateOrTransferMirrorData();
-        }
-
-        activeContact.collisionTags = new List<string>();
-        for(int i = 0; i< tags.Count; i++)
-        {
-            activeContact.collisionTags.Add(tags[i].tagName);
-        }
-
-
-        GUI.enabled = true;
-        */
-        #endregion
     }
 
     public override void CutieInspectorHandles()
@@ -272,7 +103,7 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
     /// </summary>
     public void DrawSelectedContactHandles()
     {
-        Handles.Label(Vector3.zero, "");  
+        Handles.Label(Vector3.zero, string.Empty);  
 
         if (Nimbat_SelectionData.selectedVRCNimbatObject.vrcObjectType != VRCObjectType.Contact || !activeContact)
         {
@@ -350,127 +181,12 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
     /// </summary>
     public void OnSelectionChanged()
     {
-        //mirroredVRCObject.contact = null;
-        //mirrorContact = null;
-
-        //hasMirrorSuffix = false;
-        //hasMirrorData = false;
-
         selectedVRCObject = Nimbat_SelectionData.selectedVRCNimbatObject;
         activeContact = Nimbat_SelectionData.selectedVRCNimbatObject.contact;
 
         Tools.hidden = false;
         toggleOffsetEditing = false;
-
-        /*
-        activeContactType = selectedVRCObject.contactType;
-        if(activeContactType == ContactType.Receiver)
-        {   
-            if(activeContact != null)
-            {
-                activeReceiver = activeContact.GetComponent<ContactReceiver>();
-            }
-            else
-            {
-                activeReceiver = null;
-            }
-        }
-        else
-        {
-            activeReceiver = null;
-        }
-        */
-        #region ================================ old mirror code
-        /*
-         * 
-        //--copy tags
-        UpdateTags();
-
-        //--we check for mirror information in the active selected object
-        if (Nimbat_SelectionData.selectionHasMirrorSuffix)
-        {
-            hasMirrorSuffix = true;
-
-            switch (selectedVRCObject.mirrorType)
-            {
-                case MirrorTypes.Left:
-                    if (Nimbat_SelectionData.nimbatMirrorData != null)
-                    {
-                        if (Nimbat_SelectionData.nimbatMirrorData.vrcObject_Right.contact != null)
-                        {
-                            mirroredVRCObject = Nimbat_SelectionData.nimbatMirrorData.vrcObject_Right;
-                            hasMirrorData = true;
-                        }
-                    }
-                    else
-                    {
-                        mirrorContact = null;
-                        hasMirrorData = false;
-                        mirroredVRCObject.contact = null;
-                    }
-                    break;
-                case MirrorTypes.Right:
-                    if (Nimbat_SelectionData.nimbatMirrorData != null)
-                    {
-                        if (Nimbat_SelectionData.nimbatMirrorData.vrcObject_Left.contact != null)
-                        {
-                            mirroredVRCObject = Nimbat_SelectionData.nimbatMirrorData.vrcObject_Left;
-                            hasMirrorData = true;
-                        }
-                    }
-                    else
-                    {
-                        mirrorContact = null;
-                        hasMirrorData = false;
-                        mirroredVRCObject.contact = null;
-                    }
-                    break;
-                case MirrorTypes.None:
-                    mirrorContact = null;
-                    hasMirrorData = false;
-                    mirroredVRCObject.contact = null;
-                    break;
-            }
-        }
-        else
-        {
-            mirroredVRCObject.contact = null;
-            hasMirrorSuffix = false;
-            hasMirrorData = false;
-            mirrorContact = null;
-        }
-
-        if (hasMirrorData)
-        {
-            mirrorContact = mirroredVRCObject.contact;
-        }
-        */
-        #endregion
     }
 
-    /*
-    /// <summary>
-    /// Reads the tags from the component and creates strucs we can use to draw the 
-    /// editor labels
-    /// </summary>
-    void UpdateTags()
-    {
-        if (!activeContact)
-            return;
-
-        tags = new List<Tag>();       
-        if (activeContact.collisionTags.Count > 0)
-            for (int i = 0; i < activeContact.collisionTags.Count; i++)
-            {
-                bool isRight;
-                Tag tempTag = new Tag();
-
-                tempTag.tagName = activeContact.collisionTags[i];
-                tempTag.hasMirrorSuffix = NimbatFunctions.NameHasMirrorSuffix(tempTag.tagName, out isRight);
-
-                tags.Add(tempTag);
-            }
-    }
-
-    */
+  
 }

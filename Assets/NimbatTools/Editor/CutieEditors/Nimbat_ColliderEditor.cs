@@ -6,8 +6,15 @@ using VRC.Dynamics;
 
 public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
 {
-    NimbatVRCObjectBase selectedObject;
+    NimbatVRCObjectBase selectedVRCObject;
     VRCPhysBoneColliderBase activeCollider;
+
+
+    bool toggleHeightHandle = true;
+    bool toggleRadiusHandle = true;
+
+    bool toggleOffsetEditing;
+    bool toggleOffsetEditingFirstTime;
 
     Vector3 capsuleDirection;
     Vector3 handlesPosition;
@@ -36,7 +43,7 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
 
     public override bool IsWindowValid()
     {
-        if(selectedObject.vrcObjectType == VRCObjectType.Collider)
+        if(selectedVRCObject.vrcObjectType == VRCObjectType.Collider)
         {
             return true;
         }
@@ -46,20 +53,48 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
     void OnSelectionChanged()
     {
         activeCollider = null;
-        selectedObject.ClearData();
+        selectedVRCObject.ClearData();
 
-        selectedObject = Nimbat_SelectionData.selectedVRCNimbatObject;
+        selectedVRCObject = Nimbat_SelectionData.selectedVRCNimbatObject;
 
-        if (selectedObject.vrcObjectType == VRCObjectType.Collider)
+        if (selectedVRCObject.vrcObjectType == VRCObjectType.Collider)
         {
-            activeCollider = selectedObject.collider;
+            activeCollider = selectedVRCObject.collider;
         }
     }
 
 
     public override void CutieInspectorContent()
     {
-        
+        if (selectedVRCObject.collider == null)
+        {
+            return;
+        }
+
+        GUILayout.BeginHorizontal();
+        toggleHeightHandle = GUILayout.Toggle(toggleHeightHandle, "height controller");
+        toggleRadiusHandle = GUILayout.Toggle(toggleRadiusHandle, "radius controller");
+
+        GUILayout.EndHorizontal();
+        toggleOffsetEditing = GUILayout.Toggle(toggleOffsetEditing, "Edit vrc offsets instead of transforms");
+
+        if (toggleOffsetEditing != toggleOffsetEditingFirstTime)
+        {
+            if (toggleOffsetEditing)
+            {
+                Tools.current = Tool.Move;
+            }
+            toggleOffsetEditingFirstTime = toggleOffsetEditing;
+        }
+
+        if (GUILayout.Button("Reset vrc offset data"))
+        {
+            if (EditorUtility.DisplayDialog("revert offset data", "are you sure you want to revert vrc object position and rotation offset data back to 0?", "uwu yes"))
+            {
+                selectedVRCObject.contact.position = Vector3.zero;
+                selectedVRCObject.contact.rotation = Quaternion.Euler(Vector3.zero);
+            }
+        }
     }
 
     public override void CutieInspectorHandles()                
@@ -78,15 +113,15 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
             case VRCPhysBoneColliderBase.ShapeType.Sphere:
             case VRCPhysBoneColliderBase.ShapeType.Capsule:
 
-                selectedObject.vrcRadius_Scaled = Handles.RadiusHandle(Quaternion.identity, selectedObject.positionFinal, selectedObject.vrcRadius_Scaled);
+                selectedVRCObject.vrcRadius_Scaled = Handles.RadiusHandle(Quaternion.identity, selectedVRCObject.positionFinal, selectedVRCObject.vrcRadius_Scaled);
 
                 capsuleDirection = activeCollider.transform.TransformDirection(Vector3.up).normalized;
-                handlesPosition = selectedObject.positionFinal + ((capsuleDirection * (activeCollider.height * .5f)) * selectedObject.absoluteScale);        
+                handlesPosition = selectedVRCObject.positionFinal + ((capsuleDirection * (activeCollider.height * .5f)) * selectedVRCObject.absoluteScale);        
                 newPosition = Handles.Slider(handlesPosition, capsuleDirection, .03f, Handles.ConeHandleCap, 0);
 
-                float distance = Vector3.Distance(selectedObject.positionFinal, newPosition);
+                float distance = Vector3.Distance(selectedVRCObject.positionFinal, newPosition);
 
-                activeCollider.height = (distance * 2) / selectedObject.absoluteScale;
+                activeCollider.height = (distance * 2) / selectedVRCObject.absoluteScale;
 
                 if (activeCollider.height > activeCollider.radius * 2f)
                 {
@@ -97,12 +132,8 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
                     activeCollider.shapeType = VRCPhysBoneColliderBase.ShapeType.Sphere;
                 }
 
-                break;
-                
-        }
-
-        
-
+                break;                
+        }        
     }
 
 }

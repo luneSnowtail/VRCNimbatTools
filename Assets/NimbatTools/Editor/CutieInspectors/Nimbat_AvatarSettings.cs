@@ -90,11 +90,11 @@ public class Nimbat_AvatarSettings : NimbatCutieInspectorWindow
     void SelectAvatarID(int id)
     {
         selectedAvatarId = Mathf.Clamp( id,0, avatars.Length-1);
-        
-        
-
+                
         selectedAvatar = avatars[selectedAvatarId];
         selectedAvatarAnimator = selectedAvatar.GetComponent<Animator>();
         selectedAvatarGameObject = selectedAvatar.gameObject;
+
+        Selection.activeGameObject = selectedAvatar.gameObject;
     }
 }

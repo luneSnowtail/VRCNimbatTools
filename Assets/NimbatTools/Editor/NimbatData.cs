@@ -128,14 +128,45 @@ public struct NimbatVRCObjectBase
     /// <summary>
     /// returns the world position plus vrc object offset
     /// </summary>
-    public Vector3 getPosition
+    public Vector3 positionFinal
     {
         get
         {
             switch (vrcObjectType)
             {
                 case VRCObjectType.Contact:
-                    return _contact.transform.position + _contact.transform.TransformDirection(_contact.position * absoluteScale);                    
+                    if(_contact)
+                        return _contact.transform.position + _contact.transform.TransformDirection(_contact.position * absoluteScale);
+                    break;
+                case VRCObjectType.PhysBone:
+                    if (_physBone)
+                    {
+                        if (_physBone.rootTransform)
+                    {
+                        return _physBone.rootTransform.position;
+                    }
+                        return _physBone.transform.position;
+                    }
+                    break;
+                case VRCObjectType.Collider:
+                    if(_collider)
+                        return _collider.transform.position + _collider.transform.TransformDirection(_collider.position * absoluteScale);
+                    break;
+            }
+            if(gameObject)
+                return gameObject.transform.position;
+            return Vector3.zero;
+        }
+    }
+
+    public Vector3 position
+    {
+        get
+        {
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    return _contact.transform.position;
                 case VRCObjectType.PhysBone:
                     if (_physBone.rootTransform)
                     {
@@ -143,20 +174,52 @@ public struct NimbatVRCObjectBase
                     }
                     return _physBone.transform.position;
                 case VRCObjectType.Collider:
-                    return _collider.transform.position + _collider.transform.TransformDirection(_collider.position * absoluteScale);
+                    return _collider.transform.position;
+            }
+            if (gameObject)
+                return gameObject.transform.position;
+            return Vector3.zero;
+        }
+    }
+
+
+    public Vector3 positionOffset
+    {
+        get
+        {
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    return _contact.transform.TransformDirection(_contact.position * absoluteScale);
+                case VRCObjectType.PhysBone:
+                    if (_physBone.rootTransform)
+                    {
+                        return _physBone.rootTransform.position;
+                    }
+                    return _physBone.transform.position;
+                case VRCObjectType.Collider:
+                    return _collider.transform.TransformDirection(_collider.position * absoluteScale);
             }
             return Vector3.zero;
         }
         set
         {
-
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    _contact.position =  _contact.transform.InverseTransformDirection(value / absoluteScale);
+                    break;
+                case VRCObjectType.Collider:
+                    _collider.position = _collider.transform.InverseTransformDirection(value / absoluteScale);
+                    break;
+            }
         }
     }
 
     /// <summary>
     /// returns final rotation considering both, transform and vrc object offset rotation
     /// </summary>
-    public Quaternion getRotation
+    public Quaternion rotationFinal
     {
         get
         {
@@ -189,6 +252,82 @@ public struct NimbatVRCObjectBase
         set
         {
 
+        }
+    }
+
+    public Quaternion rotation
+    {
+        get
+        {
+            Quaternion transformRotation;            
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    transformRotation = _contact.transform.rotation;
+                    return transformRotation;
+                case VRCObjectType.PhysBone:
+                    transformRotation = _physBone.transform.rotation;
+                    return transformRotation;
+                case VRCObjectType.Collider:
+                    transformRotation = _collider.transform.rotation;
+                    return transformRotation;
+            }
+
+            return Quaternion.identity;
+        }
+        set
+        {
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    _contact.transform.rotation = value;
+                    break;
+                case VRCObjectType.PhysBone:
+                    _physBone.transform.rotation = value;
+                    break;
+                case VRCObjectType.Collider:
+                    _collider.transform.rotation = value;
+                    break;
+                case VRCObjectType.EmptyGO:
+                    _gameObject.transform.rotation = value;
+                    break;
+            }
+        }
+    }
+
+    public Quaternion rotationOffset
+    {
+        get
+        {
+            Quaternion transformRotation;
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    transformRotation = _contact.rotation;
+                    return transformRotation;
+                case VRCObjectType.PhysBone:                    
+                    return Quaternion.identity;
+                case VRCObjectType.Collider:
+                    transformRotation = _collider.rotation;
+                    return transformRotation;
+            }
+
+            return Quaternion.identity;
+        }
+        set
+        {
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Contact:
+                    _contact.rotation = value;
+                    break;
+                case VRCObjectType.Collider:
+                    _collider.rotation = value;
+                    break;
+                case VRCObjectType.EmptyGO:
+                    _gameObject.transform.rotation = value;
+                    break;
+            }
         }
     }
 
@@ -362,9 +501,7 @@ public struct NimbatVRCObjectBase
             _contact = value;
         }
     }
-    public ContactReceiver receiver;
-    
-
+    public ContactReceiver receiver;    
 }
 
 public struct NimbatToolsSettings

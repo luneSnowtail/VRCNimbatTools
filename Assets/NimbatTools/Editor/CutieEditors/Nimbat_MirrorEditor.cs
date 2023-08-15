@@ -9,24 +9,26 @@ using VRC.Dynamics;
 /// and drawing mirror handles, in previous versions each editor would deal with their mirrors but
 /// its easier if this class just takes care of mirroring data;
 /// </summary>
-public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
+public class Nimbat_MirrorEditor : NimbatCutieInspectorWindow
 {
     NimbatVRCObjectBase selectedVRCObject;
+   
     NimbatMirrorObject mirrorGroup;
 
     GameObject activeObject;
+    GameObject mirrorObject;
+    Transform possibleMirror;
 
-    GameObject mirrorObject;    
-    
     bool mirrorTransforms;
-    
+    bool showMirrorObject = true;
+    bool mirrorData;
 
     static public List<ContactBase> avatarContacts;
     static public List<NimbatMirrorObject> mirrorContactsList;
 
 
     #region ============================ constructor / destructor
-    public Nimbat_MirrorObjectEditor()
+    public Nimbat_MirrorEditor()
     {
         title = "VRC Mirrored object";
         drawModes = CutieInspectorDrawModes.DropUp;
@@ -35,7 +37,7 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
 
         Nimbat_SelectionData.OnSelectionChanged += OnSelectionChanged;
     }
-    ~Nimbat_MirrorObjectEditor()
+    ~Nimbat_MirrorEditor()
     {
         Nimbat_SelectionData.OnSelectionChanged -= OnSelectionChanged;
     }
@@ -54,9 +56,16 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
 
     void OnSelectionChanged()
     {
+        selectedVRCObject.ClearData();
         selectedVRCObject = Nimbat_SelectionData.selectedVRCNimbatObject;
         activeObject = selectedVRCObject.gameObject;
         mirrorGroup = Nimbat_SelectionData.nimbatMirrorData;
+        possibleMirror = null;
+
+        if(selectedVRCObject.vrcObjectType == VRCObjectType.None)
+        {
+            return;
+        }
 
         switch (selectedVRCObject.mirrorType)
         {
@@ -69,7 +78,15 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
             case MirrorTypes.None:
                 mirrorObject = null;
                 break;
-        }        
+        }
+        
+        if (!mirrorObject)
+        {
+            if (activeObject)
+            {
+                possibleMirror = NimbatFunctions.GetTransformInChild(Nimbat_AvatarSettings.selectedAvatar.gameObject, NimbatFunctions.MirrorNameSuffix(activeObject.name));
+            }
+        }
     }
 
     public override void CutieInspectorContent()
@@ -82,18 +99,32 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
         }
         else
         {
-            GUILayout.Label("no mirror gameobject found");
-            if(GUILayout.Button("Create mirror Gameobject"))
+            if (possibleMirror)
             {
-                CreateMirrorGameobject();
+                GUILayout.Label("possible mirror?" + possibleMirror.name);
+                if (GUILayout.Button("Add Missing components"))
+                {
+                    CreateMirrorGameobject();
+                }
+            }
+            else
+            {
+                GUILayout.Label("no mirror gameobject found");
+                if(GUILayout.Button("Create mirror Gameobject"))
+                {
+                    CreateMirrorGameobject();
+                }
             }
 
             return;
         }
 
-        mirrorTransforms = GUILayout.Toggle(mirrorTransforms, " Mirror position", EditorStyles.toggleGroup);
+        showMirrorObject = GUILayout.Toggle(showMirrorObject, "Show mirror object");
 
-        if (GUILayout.Button("Copy VRC Object Data"))
+        mirrorTransforms = GUILayout.Toggle(mirrorTransforms, "Realtime mirror position");
+        mirrorData = GUILayout.Toggle(mirrorData, "Realtime Mirror data");
+
+        if (GUILayout.Button("Copy to mirror object"))
         {
             CreateOrCopyDataToMirror();
         }
@@ -104,27 +135,64 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
         if (!activeObject)
             return;
 
-        if(mirrorTransforms && mirrorObject)
+        if (!mirrorObject)
+            return;
+
+        if(mirrorTransforms)
         {
-            mirrorObject.transform.localPosition = NimbatFunctions.MirrorLocalPosition(activeObject.transform.localPosition);
+            TransferTransformMirrorData();
+        }
+
+        if (mirrorData)
+        {
+            CreateOrTransferMirrorData();
+        }
+
+        if (showMirrorObject)
+        {
+            switch (selectedVRCObject.mirrorType)
+            {
+                case MirrorTypes.Left:
+                    Handles.color = Color.blue;
+                    NimbatHandles.DrawVRCNimbatObject(mirrorGroup.vrcObject_Right);
+                    break;
+                case MirrorTypes.Right:
+                    Handles.color = Color.red;
+                    NimbatHandles.DrawVRCNimbatObject(mirrorGroup.vrcObject_Left);
+                    break;
+            }
+            Handles.color = NimbatCore.handlesDefaultColor;
         }
     }
 
     void CreateMirrorGameobject()
     {
-        if (!activeObject.transform.parent)
+        if (possibleMirror)
         {
-            Debug.Log("gameobject does not belongs to any avatar");
-            return;
+            mirrorObject = possibleMirror.gameObject;
         }
+        else
+        {
+            if (!activeObject.transform.parent)
+            {
+                Debug.Log("gameobject does not belongs to any avatar");
+                return;
+            }
 
-        string parentName = activeObject.transform.parent.name;
-        Transform parentGO = GameObject.Find(parentName).transform;
+            string parentName = activeObject.transform.parent.name;
+            parentName = NimbatFunctions.MirrorNameSuffix(parentName);
 
-        mirrorObject = new GameObject();
-        mirrorObject.name = NimbatFunctions.MirrorNameSuffix(activeObject.name);
-        mirrorObject.transform.SetParent(parentGO, true);
+            Transform parentGO = GameObject.Find(parentName).transform;
 
+            mirrorObject = new GameObject();
+            mirrorObject.name = NimbatFunctions.MirrorNameSuffix(activeObject.name);
+            mirrorObject.transform.SetParent(parentGO, true);        
+        }
+        CreateOrCopyDataToMirror();
+    }
+
+    void TransferTransformMirrorData()
+    {
         Vector3 localPos;
         Vector3 localRot;
 
@@ -132,11 +200,16 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
         mirrorObject.transform.localPosition = localPos;
         mirrorObject.transform.localRotation = Quaternion.Euler(localRot);
         mirrorObject.transform.localScale = activeObject.transform.localScale;
-
-        CreateOrCopyDataToMirror();
     }
 
     void CreateOrCopyDataToMirror()
+    {
+        TransferTransformMirrorData();
+
+        CreateOrTransferMirrorData();
+    }
+
+    void CreateOrTransferMirrorData()
     {
         switch (selectedVRCObject.vrcObjectType)
         {
@@ -185,9 +258,11 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
 
         mirrorContactComponent.shapeType = selectedVRCObject.contact.shapeType;
         mirrorContactComponent.radius = selectedVRCObject.contact.radius;
-        mirrorContactComponent.position = selectedVRCObject.contact.position;
-        mirrorContactComponent.rotation = selectedVRCObject.contact.rotation;
         mirrorContactComponent.height = selectedVRCObject.contact.height;
+
+        mirrorContactComponent.position = NimbatFunctions.MirrorLocalPosition( selectedVRCObject.contact.position);
+        mirrorContactComponent.rotation = NimbatFunctions.MirrorRotation( selectedVRCObject.contact.rotation);
+        TransferMirrorTags();
 
     }
 
@@ -201,7 +276,7 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
         //--we only create component if we did not found it
         if (!vrcCollider)
         {
-            vrcCollider = mirrorObject.AddComponent<VRCPhysBoneColliderBase>();
+            vrcCollider = mirrorObject.AddComponent<VRC.SDK3.Dynamics.PhysBone.Components.VRCPhysBoneCollider>();
         }
 
         vrcCollider.radius = selectedVRCObject.collider.radius;
@@ -209,7 +284,52 @@ public class Nimbat_MirrorObjectEditor : NimbatCutieInspectorWindow
         vrcCollider.shape = selectedVRCObject.collider.shape;
         vrcCollider.shapeType = selectedVRCObject.collider.shapeType;
         vrcCollider.insideBounds = selectedVRCObject.collider.insideBounds;
-        vrcCollider.position = selectedVRCObject.collider.position;
-        vrcCollider.rotation = selectedVRCObject.collider.rotation;
+
+        vrcCollider.position = NimbatFunctions.MirrorLocalPosition(selectedVRCObject.collider.position);
+        vrcCollider.rotation = NimbatFunctions.MirrorRotation( selectedVRCObject.collider.rotation);
+    }
+
+    /// <summary>
+    /// it copies the tags from the selected contact and sends them to the mirrored gameobject
+    /// </summary>
+    public void TransferMirrorTags()
+    {
+        ContactBase mirrorContact;
+
+        mirrorContact = mirrorObject.GetComponent<ContactBase>();
+        if (!mirrorContact)
+        {
+            Debug.LogWarning("Nimbat tools: we dont have a mirror contact in this group");
+            return;
+        }
+
+        mirrorContact.collisionTags = new List<string>();
+
+        if (selectedVRCObject.contact.collisionTags.Count <= 0)
+        {
+            Debug.LogWarning("Nimbat tools: selected contact has no tags to mirror");
+            return;
+        }
+
+        bool hasMirrorSuffix;
+        bool isRight;
+        string currentTag;
+        mirrorContact.collisionTags = new List<string>();
+
+        for (int i = 0; i < selectedVRCObject.contact.collisionTags.Count; i++)
+        {
+            currentTag = selectedVRCObject.contact.collisionTags[i];
+
+            hasMirrorSuffix = NimbatFunctions.NameHasMirrorSuffix(currentTag, out isRight);
+
+            if (hasMirrorSuffix)
+            {
+                mirrorContact.collisionTags.Add(NimbatFunctions.GetTagMirrorSuffix(currentTag));
+            }
+            else
+            {
+                mirrorContact.collisionTags.Add(currentTag);
+            }
+        }       
     }
 }

@@ -40,7 +40,7 @@ public class NimbatCore : EditorWindow
     static public Nimbat_ContactEditor nimbatOptions_contact;
     static public Nimbat_PhysboneEditor nimbatOptions_physBone;
     static public Nimbat_ColliderEditor nimbatOptions_collider;
-    static public Nimbat_MirrorObjectEditor nimbatOptions_mirror;
+    static public Nimbat_MirrorEditor nimbatOptions_mirror;
 
     static public Vector2 cutieInspectorPositions;
     static public Vector2 cutieInspectorStart = new Vector2(40, 10);
@@ -85,7 +85,7 @@ public class NimbatCore : EditorWindow
         nimbatAbout = new Nimbat_About();
         
         nimbatOptions_transform = new Nimbat_PrefabTransformOptions();
-        nimbatOptions_mirror = new Nimbat_MirrorObjectEditor();
+        nimbatOptions_mirror = new Nimbat_MirrorEditor();
         nimbatOptions_contact = new Nimbat_ContactEditor();
         nimbatOptions_physBone = new Nimbat_PhysboneEditor();
         nimbatOptions_collider = new Nimbat_ColliderEditor();

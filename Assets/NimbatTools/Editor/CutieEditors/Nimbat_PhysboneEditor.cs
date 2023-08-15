@@ -327,7 +327,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
         {
             float midPoint = tempCurve.keys[i].time + ((tempCurve.keys[i+1].time - tempCurve.keys[i].time)*.5f);
                         
-            if (NimbatHandles.DrawSphereButton(midPoint, .05f, buttonColor))
+            if (NimbatHandles.DrawSphereButtonInCurve(midPoint, .05f, buttonColor))
             {
                 tempCurve.AddKey(midPoint, tempCurve.Evaluate(midPoint));
             }
@@ -341,7 +341,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
         {
             float keyPosition = tempCurve.keys[i].time;
 
-            if (NimbatHandles.DrawSphereButton(keyPosition, .05f, buttonColor))
+            if (NimbatHandles.DrawSphereButtonInCurve(keyPosition, .05f, buttonColor))
             {
                 tempCurve.RemoveKey(i);
             }

@@ -9,6 +9,10 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
     NimbatVRCObjectBase selectedObject;
     VRCPhysBoneColliderBase activeCollider;
 
+    Vector3 capsuleDirection;
+    Vector3 handlesPosition;
+    Vector3 newPosition;
+
     float newRadius;
 
     #region ============================ constructor / destructor
@@ -17,13 +21,15 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
         title = "VRC Physbone Collider";
         drawModes = CutieInspectorDrawModes.DropUp;
         width = NimbatData.settingsWindowsWidth;
-        height = 220;
+        height = 60;
 
         Nimbat_SelectionData.OnSelectionChanged += OnSelectionChanged;
+        EditorApplication.hierarchyChanged += OnSelectionChanged;
     }
     ~Nimbat_ColliderEditor()
     {
         Nimbat_SelectionData.OnSelectionChanged -= OnSelectionChanged;
+        EditorApplication.hierarchyChanged -= OnSelectionChanged;
     }
 
     #endregion
@@ -39,6 +45,9 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
 
     void OnSelectionChanged()
     {
+        activeCollider = null;
+        selectedObject.ClearData();
+
         selectedObject = Nimbat_SelectionData.selectedVRCNimbatObject;
 
         if (selectedObject.vrcObjectType == VRCObjectType.Collider)
@@ -55,10 +64,12 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
 
     public override void CutieInspectorHandles()                
     {
+        if (!activeCollider)
+        {
+            return;
+        }
 
-        Vector3 capsuleDirection;
-        Vector3 handlesPosition;
-        Vector3 newPosition;
+
 
         Handles.Label(Vector3.zero, "Collider");
 
@@ -67,13 +78,13 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
             case VRCPhysBoneColliderBase.ShapeType.Sphere:
             case VRCPhysBoneColliderBase.ShapeType.Capsule:
 
-                selectedObject.vrcRadius_Scaled = Handles.RadiusHandle(Quaternion.identity, selectedObject.getPosition, selectedObject.vrcRadius_Scaled);
+                selectedObject.vrcRadius_Scaled = Handles.RadiusHandle(Quaternion.identity, selectedObject.positionFinal, selectedObject.vrcRadius_Scaled);
 
                 capsuleDirection = activeCollider.transform.TransformDirection(Vector3.up).normalized;
-                handlesPosition = selectedObject.getPosition + ((capsuleDirection * (activeCollider.height * .5f)) * selectedObject.absoluteScale);        
+                handlesPosition = selectedObject.positionFinal + ((capsuleDirection * (activeCollider.height * .5f)) * selectedObject.absoluteScale);        
                 newPosition = Handles.Slider(handlesPosition, capsuleDirection, .03f, Handles.ConeHandleCap, 0);
 
-                float distance = Vector3.Distance(selectedObject.getPosition, newPosition);
+                float distance = Vector3.Distance(selectedObject.positionFinal, newPosition);
 
                 activeCollider.height = (distance * 2) / selectedObject.absoluteScale;
 

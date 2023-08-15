@@ -236,6 +236,17 @@ public class NimbatFunctions
         return mirroredPosition;
     }
 
+    static public Quaternion MirrorRotation(Quaternion rotation)
+    {
+        Vector3 mirrorRotation;
+
+        mirrorRotation = rotation.eulerAngles;
+        mirrorRotation.z *= -1;
+        mirrorRotation.y *= -1;
+
+        return Quaternion.Euler(mirrorRotation);
+    }
+
     /// <summary>
     /// Makes one transform match the target transform but mirrored (in local data)
     /// </summary>

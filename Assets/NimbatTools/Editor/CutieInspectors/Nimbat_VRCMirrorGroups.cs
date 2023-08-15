@@ -23,7 +23,6 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     static Texture2D icon_contact;
     static Texture2D icon_physbone ;
 
-
     int groupHeight = 17;
 
     bool tabPhysbones = true;
@@ -62,7 +61,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     #region ========================== CutieInspectorOVerrides
     public override void CutieInspectorHandles()
     {
-        DrawMirroredObjects();
+        DrawMirrorGroups();
     }
 
     public override void CutieInspectorContent()
@@ -260,12 +259,12 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         //--temporary mirror object
         
 
-        CreateMirrorForContacts();
-        CreateMirrorForPhysbones();
-        CreateMirrorForColliders();
+        CreateMirrorGroupsForContacts();
+        CreateMirrorGroupsForPhysbones();
+        CreateMirrorGroupsForColliders();
     }
 
-    void CreateMirrorForContacts()
+    void CreateMirrorGroupsForContacts()
     {
         NimbatMirrorObject tempMirrorObject;
         string tempMirrorObjectName;
@@ -329,7 +328,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         }
     }
 
-    void CreateMirrorForPhysbones()
+    void CreateMirrorGroupsForPhysbones()
     {
         NimbatMirrorObject tempMirrorObject;
         string tempMirrorObjectName;
@@ -395,10 +394,8 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         }
     }
 
-    void CreateMirrorForColliders()
-    {
-
-        
+    void CreateMirrorGroupsForColliders()
+    {        
         NimbatMirrorObject tempMirrorObject;
         string tempMirrorObjectName;
         bool isRightSide;
@@ -464,7 +461,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     }
 
 
-    void DrawMirroredObjects()
+    void DrawMirrorGroups()
     {
         //Dan said this line was important, this is to prevent an unity bug where handles somehow
         //do not draw if you dont do this first?
@@ -526,71 +523,19 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         }
 
         //--draws the icon
-        Handles.Label(vrcObject.getPosition, vrcObject.iconTexture);
+        Handles.Label(vrcObject.positionFinal, vrcObject.iconTexture);
 
         Handles.color = color;
 
-        switch (vrcObject.vrcObjectType)
-        {
-            case VRCObjectType.Contact:
-
-                if (vrcObject.contact.shapeType == ContactBase.ShapeType.Sphere)
-                {
-                    HandlesUtil.DrawWireSphere(NimbatFunctions.GetContactPosition(vrcObject.contact), vrcObject.vrcRadius_Scaled);
-                }
-                else
-                {
-                    HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, vrcObject.contact.height * vrcObject.absoluteScale, vrcObject.vrcRadius_Scaled);
-                }
-
-
-                break;
-            case VRCObjectType.Collider:
-
-                if (vrcObject.collider.shapeType  == VRCPhysBoneColliderBase.ShapeType.Sphere)
-                {
-                    HandlesUtil.DrawWireSphere(vrcObject.getPosition, vrcObject.vrcRadius_Scaled);
-                    Handles.color = new Color(0,1,0,.4f);
-                    HandlesUtil.DrawWireSphere(vrcObject.getPosition, vrcObject.vrcRadius_Scaled -.01f);
-                    Handles.color = color;
-                }
-                else if (vrcObject.collider.shapeType == VRCPhysBoneColliderBase.ShapeType.Capsule)
-                {
-                    HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, (vrcObject.collider.height)* vrcObject.absoluteScale, vrcObject.vrcRadius_Scaled);
-                    Handles.color = new Color(0, 1, 0, .4f);
-                    HandlesUtil.DrawWireCapsule(vrcObject.getPosition, vrcObject.getRotation, (vrcObject.collider.height * vrcObject.absoluteScale - .003f), vrcObject.vrcRadius_Scaled -.003f);
-                    Handles.color = color;
-                }
-                break;
-            case VRCObjectType.PhysBone:
-
-                HandlesUtil.DrawWireSphere(vrcObject.getPosition, vrcObject.vrcRadius_Scaled);
-
-                if (vrcObject.physBone.rootTransform)
-                {
-                    Transform[] physboneChilds = vrcObject.physBone.rootTransform.GetComponentsInChildren<Transform>();
-
-                    foreach(Transform child in physboneChilds)
-                    {
-                        if(child.childCount >= 1)
-                            for(int i = 0; i< child.childCount; i++)
-                            {
-                                Handles.DrawLine(child.position, child.GetChild(i).position);
-                            }
-                    }
-                }
-
-                break;
-        }                
+        NimbatHandles.DrawVRCNimbatObject(vrcObject);
 
         if (!NimbatCore.ctrlDown)
         {
             return;
         }
 
-
         if (Handles.Button(
-            vrcObject.getPosition,
+            vrcObject.positionFinal,
             Quaternion.identity,
             .01f,
             vrcObject.vrcRadius_Scaled,
@@ -598,7 +543,6 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
         {
             Selection.activeGameObject = vrcObject.gameObject;
         }
-
 
         Handles.color = defaultGUIColor;
     }

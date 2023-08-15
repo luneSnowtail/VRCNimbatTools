@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using VRC.Dynamics;
 
+/*
 /// <summary>
 /// Default Vrchat tag values
 /// </summary>
@@ -45,38 +46,51 @@ public struct Tag
     public string tagName;
     public bool hasMirrorSuffix;
 }
+*/
 
+/// <summary>
+/// Class in charge of showing editor handles for editing contact properties faster
+/// </summary>
 public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 {
-    static Color leftSideColor = new Color(0, 0, 1, .3f);
-    static Color rightSideColor = new Color(1, 0, 0, .3f);
-
-    static NimbatVRCObjectBase selectedVRCObject;
+    NimbatVRCObjectBase selectedVRCObject;
     static NimbatVRCObjectBase mirroredVRCObject;
 
-    static bool hasMirrorData;
-    static bool hasMirrorSuffix;
+    static bool toggleHeightHandle = true;
+    static bool toggleRadiusHandle = true;
 
-    static bool mirrorRadius;
-    static bool mirrorPosition;
+    static bool toggleOffsetEditing;
+    bool toggleOffsetEditingFirstTime;
 
     static ContactBase activeContact;
-    static ContactBase mirrorContact;
+    float newRadius;
 
-    static ContactType activeContactType;
+    /*
     static ContactReceiver activeReceiver;
-
+    static ContactType activeContactType;
+    static ContactBase mirrorContact;
     static List<Tag> tags;  
-
     static VRCDefaultTags defaultTempTag;
+    */
+
+    //--Data for Handles
+    Vector3 capsuleDirection;
+    Vector3 handlesPosition;
+    Vector3 newPosition;
+
+    //--data for offset handles
+    Vector3 localOffset;
+    Quaternion transformRotation;
+    Quaternion finalRotation;
+    Quaternion offsetRotation;
 
     #region ============================ constructor / destructor
     public Nimbat_ContactEditor()
     {
-        title = "Mirror Group Contact";
+        title = "VRC Contact";
         drawModes = CutieInspectorDrawModes.DropUp;
         width = NimbatData.settingsWindowsWidth;
-        height = 220;
+        height = 60;
 
         Nimbat_SelectionData.OnSelectionChanged += OnSelectionChanged;
     }
@@ -95,6 +109,33 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
             return;
         }
 
+        GUILayout.BeginHorizontal();
+        toggleHeightHandle = GUILayout.Toggle(toggleHeightHandle, "height controller");        
+        toggleRadiusHandle = GUILayout.Toggle(toggleRadiusHandle, "radius controller");
+
+        GUILayout.EndHorizontal();
+        toggleOffsetEditing = GUILayout.Toggle(toggleOffsetEditing, "Edit vrc offsets instead of transforms");
+
+        if(toggleOffsetEditing != toggleOffsetEditingFirstTime)
+        {
+            if (toggleOffsetEditing)
+            {
+                Tools.current = Tool.Move;                
+            }
+            toggleOffsetEditingFirstTime = toggleOffsetEditing;
+        }
+
+        if(GUILayout.Button("Reset vrc offset data"))
+        {
+            if(EditorUtility.DisplayDialog("revert offset data","are you sure you want to revert vrc object position and rotation offset data back to 0?","uwu yes"))
+            {
+                selectedVRCObject.contact.position = Vector3.zero;
+                selectedVRCObject.contact.rotation = Quaternion.Euler(Vector3.zero);
+            }
+        }
+
+        #region ============ OLD MIRROR DATA
+        /*
         GUILayout.BeginHorizontal();
 
         if (hasMirrorSuffix)
@@ -115,7 +156,15 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
         }        
 
         GUILayout.EndHorizontal();
+        */
+        #endregion
 
+        //--this editor (and every other) were going to handle the transfer to mirror
+        //  individually but i decided its best to have only one editor in charge of mirror stugg
+
+        #region ================ OLD TAG DATA, prob delete
+
+        /*
         GUILayout.BeginHorizontal();
 
         GUILayout.Label("=== Tags ===", EditorStyles.miniLabel);
@@ -128,7 +177,6 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
         GUILayout.EndHorizontal();
 
         UpdateTags();
-
         #region ========================= Draw tags
 
         for (int i = 0; i< tags.Count; i++)
@@ -198,11 +246,13 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 
 
         GUI.enabled = true;
+        */
+        #endregion
     }
 
     public override void CutieInspectorHandles()
     {
-        DrawSelectedContactHandle();
+        DrawSelectedContactHandles();
     }
 
     public override bool IsWindowValid()
@@ -220,7 +270,7 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
     /// <summary>
     /// If the object we have selected is a contact, we draw the handles to edit it
     /// </summary>
-    static public void DrawSelectedContactHandle()
+    public void DrawSelectedContactHandles()
     {
         Handles.Label(Vector3.zero, "");  
 
@@ -231,71 +281,66 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 
         //--draws name of contact
         Handles.Label(NimbatFunctions.GetContactPosition(activeContact), activeContact.transform.name);
+        Handles.DrawDottedLine(selectedVRCObject.position, selectedVRCObject.positionFinal, 4f);
 
         EditorGUI.BeginChangeCheck();
-
-        float newRadius = Handles.RadiusHandle(
-            Quaternion.identity,
-            NimbatFunctions.GetContactPosition(activeContact),
-            activeContact.radius * selectedVRCObject.absoluteScale);
-
-        if(selectedVRCObject.contact.shapeType == ContactBase.ShapeType.Capsule)
+        if (toggleRadiusHandle)
         {
-            Vector3 capsuleDirection = activeContact.transform.TransformDirection(Vector3.up).normalized;
-            Vector3 handlesPosition = activeContact.transform.position + ((capsuleDirection * (activeContact.height * .5f)) * selectedVRCObject.absoluteScale);
-            Vector3 newPosition = Handles.Slider(handlesPosition, capsuleDirection, .05f ,Handles.ConeHandleCap,0);
+            newRadius = Handles.RadiusHandle(
+                Quaternion.identity,
+                selectedVRCObject.positionFinal,
+                activeContact.radius * selectedVRCObject.absoluteScale);
 
-            float distance = Vector3.Distance(activeContact.transform.position, newPosition);
+            if (EditorGUI.EndChangeCheck())
+            {                
+                activeContact.radius = newRadius / selectedVRCObject.absoluteScale;
+            }
+        }
+
+
+        if (toggleOffsetEditing)
+        {            
+            Tools.hidden = true;
+            
+            if(Tools.current == Tool.Move)
+            {
+                localOffset = selectedVRCObject.position + selectedVRCObject.positionOffset;
+                if(Tools.pivotRotation == PivotRotation.Local)
+                {
+                    localOffset = Handles.PositionHandle(localOffset, selectedVRCObject.rotationFinal);
+                }
+                else
+                {
+                    localOffset = Handles.PositionHandle(localOffset, Quaternion.identity);
+                }
+
+                selectedVRCObject.positionOffset = (localOffset - selectedVRCObject.position);
+            }
+            if(Tools.current == Tool.Rotate)
+            {
+                finalRotation = selectedVRCObject.rotationOffset;                
+                finalRotation = Handles.RotationHandle(finalRotation, selectedVRCObject.positionFinal);
+
+                selectedVRCObject.rotationOffset = finalRotation.normalized;
+            }
+
+        }
+        else
+        {
+            Tools.hidden = false;
+        }
+
+        if(toggleHeightHandle)
+        {
+            capsuleDirection = selectedVRCObject.rotationFinal * Vector3.up;
+            handlesPosition = selectedVRCObject.positionFinal + ((capsuleDirection * (activeContact.height / 2)) * selectedVRCObject.absoluteScale);
+            newPosition = Handles.Slider(handlesPosition, capsuleDirection, .03f ,Handles.ConeHandleCap,0);
+
+            float distance = Vector3.Distance(selectedVRCObject.positionFinal, newPosition);
 
             activeContact.height = (distance*2) / selectedVRCObject.absoluteScale;
         }
 
-        if (EditorGUI.EndChangeCheck())
-        {
-            activeContact.radius = newRadius / selectedVRCObject.absoluteScale;
-
-            if (hasMirrorData)
-            {
-                if (mirrorRadius)
-                {
-                    mirrorContact.radius = newRadius / selectedVRCObject.absoluteScale;
-                }
-            }
-        }
-
-        if (hasMirrorData)
-        {
-            /*
-            if (mirrorPosition)
-            {
-                Vector3 mirroredPosition = activeContact.transform.localPosition;
-                mirroredPosition.x *= -1;
-
-                mirrorContact.transform.localPosition = mirroredPosition;
-            }
-            */
-
-            //draws the mirrored contact
-            if (mirrorContact)
-            {
-                if (mirroredVRCObject.mirrorType == MirrorTypes.Right)
-                {
-                    Handles.color = rightSideColor;
-                }
-                if (mirroredVRCObject.mirrorType == MirrorTypes.Left)
-                {
-                    Handles.color = leftSideColor;
-                }
-
-                Handles.SphereHandleCap(1,
-                    NimbatFunctions.GetContactPosition(mirrorContact),
-                    Quaternion.identity,
-                    (mirrorContact.radius * 2) * mirroredVRCObject.absoluteScale
-                    , EventType.Repaint);
-
-                Handles.color = NimbatCore.handlesDefaultColor;
-            }
-        }
     }
 
     /// <summary>
@@ -305,17 +350,20 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
     /// </summary>
     public void OnSelectionChanged()
     {
-        mirroredVRCObject.contact = null;
-        mirrorContact = null;
+        //mirroredVRCObject.contact = null;
+        //mirrorContact = null;
 
-        hasMirrorSuffix = false;
-        hasMirrorData = false;
+        //hasMirrorSuffix = false;
+        //hasMirrorData = false;
 
         selectedVRCObject = Nimbat_SelectionData.selectedVRCNimbatObject;
         activeContact = Nimbat_SelectionData.selectedVRCNimbatObject.contact;
 
-        activeContactType = selectedVRCObject.contactType;
+        Tools.hidden = false;
+        toggleOffsetEditing = false;
 
+        /*
+        activeContactType = selectedVRCObject.contactType;
         if(activeContactType == ContactType.Receiver)
         {   
             if(activeContact != null)
@@ -331,7 +379,10 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
         {
             activeReceiver = null;
         }
-
+        */
+        #region ================================ old mirror code
+        /*
+         * 
         //--copy tags
         UpdateTags();
 
@@ -393,10 +444,11 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
         {
             mirrorContact = mirroredVRCObject.contact;
         }
-
-
+        */
+        #endregion
     }
 
+    /*
     /// <summary>
     /// Reads the tags from the component and creates strucs we can use to draw the 
     /// editor labels
@@ -420,135 +472,5 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
             }
     }
 
-    /// <summary>
-    /// If we have mirror suffix but the opposite game objct is missing this function
-    /// generates the mirrored game object
-    /// </summary>
-    static public void CreateOrTransferMirrorData()
-    {
-        //--first search for a gameobject that already exists
-        GameObject mirrorContactGO = GameObject.Find(NimbatFunctions.MirrorNameSuffix(activeContact.transform.name));
-
-        //--if it cant be found we find parent mirror and create a new gameobject
-        if (!mirrorContactGO)
-        {
-            string mirrorParentName = NimbatFunctions.MirrorNameSuffix(activeContact.transform.parent.name);
-            GameObject mirrorParent = GameObject.Find(mirrorParentName);
-
-            if (!mirrorParent)
-            {
-                return;
-            }
-
-            mirrorContactGO = new GameObject();
-
-            //--parent new gameobject to mirror parent
-            mirrorContactGO.transform.SetParent(mirrorParent.transform, true);
-
-
-            mirrorContactGO.transform.localPosition = NimbatFunctions.MirrorLocalPosition(activeContact.transform.localPosition);
-            mirrorContactGO.transform.localScale = activeContact.transform.localScale;
-
-            //--get the name and mirror the suffix
-            mirrorContactGO.name = NimbatFunctions.MirrorNameSuffix(activeContact.gameObject.name);
-        }
-
-
-        ContactBase mirrorContactComponent;
-        
-
-        if(selectedVRCObject.contactType == ContactType.Receiver)
-        {
-            ContactReceiver mirrorContactReceiverComponent = mirrorContactGO.GetComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactReceiver>();
-            if (!mirrorContactReceiverComponent)
-            {
-                mirrorContactReceiverComponent = mirrorContactGO.AddComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactReceiver>();
-            }
-
-            mirrorContactComponent = mirrorContactReceiverComponent;
-
-            mirrorContactReceiverComponent.receiverType = selectedVRCObject.receiver.receiverType;
-            mirrorContactReceiverComponent.minVelocity = selectedVRCObject.receiver.minVelocity;
-
-            if(!string.IsNullOrWhiteSpace(mirrorContactReceiverComponent.parameter))
-            {
-                mirrorContactReceiverComponent.parameter = NimbatFunctions.GetTagMirrorSuffix(selectedVRCObject.receiver.parameter);
-            }
-
-        }
-        else
-        {
-            mirrorContactComponent = mirrorContactGO.GetComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactSender>();
-
-            //--we only create component if we did not found it
-            if (!mirrorContactComponent)
-            {
-                mirrorContactComponent = mirrorContactGO.AddComponent<VRC.SDK3.Dynamics.Contact.Components.VRCContactSender>();
-            }
-        }
-
-        mirrorContactComponent.radius = activeContact.radius;
-        mirrorContactComponent.position = activeContact.position;
-        mirrorContactComponent.shapeType = activeContact.shapeType;
-        mirrorContactComponent.rotation = activeContact.rotation;
-
-        mirrorContact = mirrorContactComponent;
-
-        //--transfer tags as well
-        TransferMirrorTags();
-
-        Selection.activeGameObject = mirrorContactGO;
-    }
-
-    /// <summary>
-    /// it copies the tags from the selected contact and sends them to the mirrored gameobject
-    /// </summary>
-    static public void TransferMirrorTags()
-    {
-        if (!mirrorContact)
-        {
-            Debug.LogWarning("Nimbat tools: we dont have a mirror contact in this group");
-            return;
-        }
-
-        mirrorContact.collisionTags = new List<string>();
-
-        if(tags.Count <= 0)
-        {
-            Debug.LogWarning("Nimbat tools: selected contact has no tags to mirror");
-            return;
-        }
-
-        for(int i = 0; i < tags.Count; i++)
-        {
-            if (tags[i].hasMirrorSuffix)
-            {
-                mirrorContact.collisionTags.Add(NimbatFunctions.GetTagMirrorSuffix(tags[i].tagName));
-            }
-            else
-            {
-                mirrorContact.collisionTags.Add(tags[i].tagName);
-            }
-        }
-
-        mirrorContact.radius = activeContact.radius;
-        mirrorContact.height = activeContact.height;
-        mirrorContact.shapeType = activeContact.shapeType;
-
-        Vector3 localPos;
-        Vector3 localRot;
-
-        NimbatFunctions.MirrorTransforms(activeContact.transform, out localPos, out localRot);
-
-        mirrorContact.transform.localPosition = localPos;
-        mirrorContact.transform.localRotation = Quaternion.Euler(localRot);
-
-        Vector3 mirrorRotationEuler = activeContact.rotation.eulerAngles;
-        mirrorRotationEuler.y *= -1;
-        mirrorRotationEuler.z *= -1;
-
-        mirrorContact.rotation = Quaternion.Euler(mirrorRotationEuler);
-            
-
-    }
+    */
 }

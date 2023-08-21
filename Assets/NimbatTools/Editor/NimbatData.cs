@@ -180,8 +180,13 @@ public struct NimbatVRCObjectBase
                 return gameObject.transform.position;
             return Vector3.zero;
         }
-    }
 
+        set
+        {
+            if (gameObject)
+                gameObject.transform.position = value;
+        }
+    }
 
     public Vector3 positionOffset
     {
@@ -504,34 +509,49 @@ public struct NimbatVRCObjectBase
     public ContactReceiver receiver;    
 }
 
-public struct NimbatToolsSettings
-{
-    public bool realTimeRadiusMirror;           //if set to on, changing this radius also changes their mirrored counterpart
-    public bool realTimePositionMirror;         //if set to on, moving this object also moves their mirrored counterpart
-}
-
-public struct NimbatPhysBoneLine_Point
-{
-    public Transform previousTransform;
-    public Transform nextTransform;
-    public Transform currentTransform;
-    
-    public float currentDistance;
-
-    public bool isFirstPoint;
-    public bool isLastPoint;
-
-}
-
 public struct NimbatPhysBoneSegment
 {
     public Transform segmentStart;
     public Transform segmentEnd;
 
+    public float segmentSize;
+
     public float distanceAtStart;
     public float distanceAtEnd;
 }
 
+public struct NimbatPhysBoneCurvePoint
+{
+    public Vector3 position;
+    public Vector3 direction;
+
+    public Vector3 forwardDirection;    
+
+    public float radius;    
+
+    public Vector3 directionScaled
+    {
+        get
+        {
+            return direction * radius;
+        }
+    }
+    public Vector3 positionScaled
+    {
+        get
+        {
+            return position + directionScaled;
+        }
+    }
+    public Vector3 positionScaledInverted
+    {
+        get
+        {
+            return position - directionScaled;
+        }
+    }
+
+}
 public struct NimbatBone
 {
     public Transform boneStart;

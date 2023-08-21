@@ -16,6 +16,14 @@ public enum CutieInspectorDrawModes
     DropUp,     //--expands but going up
 }
 
+public enum EnabledStates
+{
+    Disabled,
+    FirstTimeEnabled,
+    Emabled,
+    FirstTimeDisabled,
+}
+
 public class NimbatCutieInspectorWindow
 {
     public CutieInspectorDrawModes drawModes;
@@ -29,17 +37,22 @@ public class NimbatCutieInspectorWindow
         }
         set
         {
-            if (value)
-            {
-                OnEnable();
+            if(value != _isEnabled)
+            {                
+                if (value)
+                {
+                    OnEnable();
+                }
+                else
+                {
+                    OnDisable();
+                }
             }
-            else
-            {
-                OnDisable();
-            }
+
             _isEnabled = value;
         }
-    }                 
+    }
+
     public bool drawHandles = true;         //if set to true the handles are drawed in the scene view
     public bool expanded = true;            //if set to true we expand the cutie inspector window to show content
 

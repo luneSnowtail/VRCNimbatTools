@@ -22,6 +22,10 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
 
     float newRadius;
 
+    //--data for offset handles
+    Vector3 localOffset;
+    Quaternion finalRotation;
+
     #region ============================ constructor / destructor
     public Nimbat_ColliderEditor()
     {
@@ -91,8 +95,8 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
         {
             if (EditorUtility.DisplayDialog("revert offset data", "are you sure you want to revert vrc object position and rotation offset data back to 0?", "uwu yes"))
             {
-                selectedVRCObject.contact.position = Vector3.zero;
-                selectedVRCObject.contact.rotation = Quaternion.Euler(Vector3.zero);
+                selectedVRCObject.positionOffset = Vector3.zero;
+                selectedVRCObject.rotationOffset = Quaternion.Euler(Vector3.zero);
             }
         }
     }
@@ -104,36 +108,65 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
             return;
         }
 
+        Handles.Label(Vector3.zero, string.Empty);
 
-
-        Handles.Label(Vector3.zero, "Collider");
-
-        switch (activeCollider.shapeType)
+        EditorGUI.BeginChangeCheck();
+        if (toggleRadiusHandle)
         {
-            case VRCPhysBoneColliderBase.ShapeType.Sphere:
-            case VRCPhysBoneColliderBase.ShapeType.Capsule:
+            newRadius = Handles.RadiusHandle(
+                Quaternion.identity,
+                selectedVRCObject.positionFinal,
+                activeCollider.radius * selectedVRCObject.absoluteScale);
 
-                selectedVRCObject.vrcRadius_Scaled = Handles.RadiusHandle(Quaternion.identity, selectedVRCObject.positionFinal, selectedVRCObject.vrcRadius_Scaled);
+            if (EditorGUI.EndChangeCheck())
+            {
+                activeCollider.radius = newRadius / selectedVRCObject.absoluteScale;
+            }
+        }
 
-                capsuleDirection = activeCollider.transform.TransformDirection(Vector3.up).normalized;
-                handlesPosition = selectedVRCObject.positionFinal + ((capsuleDirection * (activeCollider.height * .5f)) * selectedVRCObject.absoluteScale);        
-                newPosition = Handles.Slider(handlesPosition, capsuleDirection, .03f, Handles.ConeHandleCap, 0);
+        if (toggleOffsetEditing)
+        {
+            Tools.hidden = true;
 
-                float distance = Vector3.Distance(selectedVRCObject.positionFinal, newPosition);
-
-                activeCollider.height = (distance * 2) / selectedVRCObject.absoluteScale;
-
-                if (activeCollider.height > activeCollider.radius * 2f)
+            if (Tools.current == Tool.Move)
+            {
+                localOffset = selectedVRCObject.position + selectedVRCObject.positionOffset;
+                if (Tools.pivotRotation == PivotRotation.Local)
                 {
-                    activeCollider.shapeType = VRCPhysBoneColliderBase.ShapeType.Capsule;
+                    localOffset = Handles.PositionHandle(localOffset, selectedVRCObject.rotationFinal);
                 }
                 else
                 {
-                    activeCollider.shapeType = VRCPhysBoneColliderBase.ShapeType.Sphere;
+                    localOffset = Handles.PositionHandle(localOffset, Quaternion.identity);
                 }
 
-                break;                
-        }        
+                selectedVRCObject.positionOffset = (localOffset - selectedVRCObject.position);
+            }
+            if (Tools.current == Tool.Rotate)
+            {
+                finalRotation = selectedVRCObject.rotationOffset;
+                finalRotation = Handles.RotationHandle(finalRotation, selectedVRCObject.positionFinal);
+
+                selectedVRCObject.rotationOffset = finalRotation.normalized;
+            }
+
+        }
+        else
+        {
+            Tools.hidden = false;
+        }
+
+        if (toggleHeightHandle)
+        {
+            capsuleDirection = selectedVRCObject.rotationFinal * Vector3.up;
+            handlesPosition = selectedVRCObject.positionFinal + ((capsuleDirection * (activeCollider.height / 2)) * selectedVRCObject.absoluteScale);
+            newPosition = Handles.Slider(handlesPosition, capsuleDirection, .03f, Handles.ConeHandleCap, 0);
+
+            float distance = Vector3.Distance(selectedVRCObject.positionFinal, newPosition);
+
+            activeCollider.height = (distance * 2) / selectedVRCObject.absoluteScale;
+        }
+
     }
 
 }

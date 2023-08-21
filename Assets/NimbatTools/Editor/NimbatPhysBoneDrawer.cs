@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using VRC.Dynamics;
 
 public class NimbatPhysBoneDrawer 
-{
-    static public List<NimbatPhysBoneLine_Point> physBoneChain;
+{    
     static public List<NimbatPhysBoneSegment> physBoneSegments;
     static public List<Transform> physBoneTransform;    
     static public float normalizedScale;
@@ -77,6 +77,8 @@ public class NimbatPhysBoneDrawer
             {
                 physBoneSegment = new NimbatPhysBoneSegment();
 
+                physBoneSegment.segmentSize = segmentNormalizedDistance;
+
                 physBoneSegment.segmentStart = physBoneTransform[i];
                 physBoneSegment.segmentEnd = physBoneTransform[i + 1];
 
@@ -112,16 +114,17 @@ public class NimbatPhysBoneDrawer
         {
             return physBoneSegments[physBoneSegments.Count - 1].segmentEnd.position;
         }
-        
-        
+                        
         for(int i = 0; i < physBoneSegments.Count; i++) 
         {
-            if(normalizedRange >= physBoneSegments[i].distanceAtStart && normalizedRange <= physBoneSegments[i].distanceAtEnd)
-            {
-                float remainingDistance = normalizedRange - physBoneSegments[i].distanceAtStart;
-                float segmentDistance = Vector3.Distance(physBoneSegments[i].segmentStart.position, physBoneSegments[i].segmentEnd.position);
+            var physBoneSeg = physBoneSegments[i];
 
-                return Vector3.Lerp(physBoneSegments[i].segmentStart.position, physBoneSegments[i].segmentEnd.position, remainingDistance / segmentDistance);
+            if (normalizedRange >= physBoneSeg.distanceAtStart && normalizedRange <= physBoneSeg.distanceAtEnd)
+            {
+                float remainingDistanceNormalized = normalizedRange - physBoneSeg.distanceAtStart;
+                float remainingDistance01 = remainingDistanceNormalized / physBoneSeg.segmentSize;
+
+                return Vector3.Lerp(physBoneSeg.segmentStart.position, physBoneSeg.segmentEnd.position, remainingDistance01);
             }
         }
 
@@ -136,78 +139,43 @@ public class NimbatPhysBoneDrawer
             return 1;
         }
 
-        if (normalizedRange == 0)
+        if (normalizedRange <= 0)
         {
             return NimbatFunctions.GetAbsoluteScale(physBoneSegments[0].segmentStart.gameObject);
         }
 
+        if(normalizedRange >= 1)
+        {
+            return NimbatFunctions.GetAbsoluteScale(physBoneSegments[physBoneSegments.Count - 1].segmentEnd.gameObject);
+        }
+
         for (int i = 0; i < physBoneSegments.Count; i++)
         {
-            if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
+            if (normalizedRange >= physBoneSegments[i].distanceAtStart && normalizedRange <= physBoneSegments[i].distanceAtEnd)
             {
+                
+
                 return NimbatFunctions.GetAbsoluteScale(physBoneSegments[i].segmentStart.gameObject);
             }
         }
 
-        return 1;
+        return 0;
     }
-
 
     static public Vector3 GetForwardDirectionAtPosition(float normalizedRange)
     {
-        if (physBoneSegments.Count <= 0)
-        {
-            return Vector3.zero;
-        }
-
-        for (int i = 0; i < physBoneSegments.Count; i++)
-        {
-            if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
-            {
-                return physBoneSegments[i].segmentStart.TransformDirection(Vector3.up) ;
-            }
-        }
-
-        return physBoneSegments[0].segmentStart.TransformDirection(Vector3.up);
+        return TransformDirectionAtCurvePoint(Vector3.up, normalizedRange);
     }
 
     static public Vector3 GetRotationAxisAtPosition(float normalizedRange)
     {
-        if (physBoneSegments.Count <= 0)
-        {
-            return Vector3.zero;
-        }
-
-        for (int i = 0; i < physBoneSegments.Count; i++)
-        {
-            if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
-            {
-                return physBoneSegments[i].segmentStart.TransformDirection(Vector3.right).normalized;
-            }
-        }
-
-        return physBoneSegments[0].segmentStart.TransformDirection(Vector3.right).normalized;
+        return TransformDirectionAtCurvePoint(Vector3.right, normalizedRange);
     }
-
 
     static public Vector3 GetUpAxisAtPosition(float normalizedRange)
     {
-        if (physBoneSegments.Count <= 0)
-        {
-            return Vector3.zero;
-        }
-
-        for (int i = 0; i < physBoneSegments.Count; i++)
-        {
-            if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
-            {
-                return physBoneSegments[i].segmentStart.TransformDirection(Vector3.back); 
-            }
-        }
-
-        return Vector3.forward;
+        return TransformDirectionAtCurvePoint(Vector3.back, normalizedRange);
     }
-
 
     static public Vector3 TransformDirectionAtCurvePoint(Vector3 direction, float normalizedRange)
     {
@@ -216,17 +184,42 @@ public class NimbatPhysBoneDrawer
             return Vector3.zero;
         }
 
+        if(normalizedRange <= 0)
+        {
+            return physBoneSegments[0].segmentStart.TransformDirection(direction);
+        }
+        
+        if(normalizedRange >= 1)
+        {
+            return physBoneSegments[physBoneSegments.Count - 1].segmentEnd.TransformDirection(direction);
+        }
+
         for (int i = 0; i < physBoneSegments.Count; i++)
         {
-            if (normalizedRange > physBoneSegments[i].distanceAtStart && normalizedRange < physBoneSegments[i].distanceAtEnd)
+            var physBoneSeg = physBoneSegments[i];
+
+            if (normalizedRange >= physBoneSeg.distanceAtStart && normalizedRange <= physBoneSeg.distanceAtEnd)
             {
-                return physBoneSegments[i].segmentStart.TransformDirection(direction);
+                return physBoneSeg.segmentStart.TransformDirection(direction);
             }
         }
 
         return physBoneSegments[0].segmentStart.TransformDirection(direction);
     }
 
+    static public NimbatPhysBoneCurvePoint GetPointCurveAtPosition(float normalizedRange, VRCPhysBoneBase activePhysbone)
+    {
+        NimbatPhysBoneCurvePoint point = new NimbatPhysBoneCurvePoint();
+
+        point.position = GetPosition(normalizedRange);
+        point.direction = TransformDirectionAtCurvePoint(Vector3.forward, normalizedRange);
+        point.radius = activePhysbone.radiusCurve.Evaluate(normalizedRange) * GetAbsoluteScale(normalizedRange) * activePhysbone.radius;
+
+        point.forwardDirection = GetForwardDirectionAtPosition(normalizedRange);
+
+        return point;
+
+    }
 
     //Twikle sparlight said this function would not be deleted and would make it to release
     //Dan said this line is very important, keeping it

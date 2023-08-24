@@ -21,16 +21,22 @@ public class Nimbat_About : NimbatCutieInspectorWindow
         GUILayout.Label("I still expect this tool to have many bugs but please help me report them at discord or git website, thanks for helping me make this tool better",EditorStyles.wordWrappedMiniLabel);
 
         GUILayout.Label("Even when this tool is and will always be free, you can still support me at patreon", EditorStyles.wordWrappedLabel);
-
+        
+        GUILayout.BeginHorizontal();
         if (GUILayout.Button("Patreon"))
         {
             Application.OpenURL("https://patreon.com/nimbattools");
         }
+        if (GUILayout.Button("Git"))
+        {
+            Application.OpenURL("https://github.com/luneSnowtail/VRCNimbatTools");
+        }
+        GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("bsky"))
+        if (GUILayout.Button("Bsky"))
         {
-            Application.OpenURL("https://lunesnowtail.bsky.social");
+            Application.OpenURL("https://bsky.app/profile/nimbat.live");
         }
         if (GUILayout.Button("Twitch"))
         {

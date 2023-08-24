@@ -33,7 +33,7 @@ public class Nimbat_MirrorEditor : NimbatCutieInspectorWindow
         title = "VRC Mirrored object";
         drawModes = CutieInspectorDrawModes.DropUp;
         width = NimbatData.settingsWindowsWidth;
-        height = 220;
+        height = 110;
 
         Nimbat_SelectionData.OnSelectionChanged += OnSelectionChanged;
     }
@@ -219,8 +219,32 @@ public class Nimbat_MirrorEditor : NimbatCutieInspectorWindow
             case VRCObjectType.Collider:
                 CreateOrTransformMirrorColliderData();
                 break;
+            case VRCObjectType.PhysBone:
+                CreateOrTransformMirrorPhysboneData();
+                break;
         }
     }
+
+    void CreateOrTransformMirrorPhysboneData()
+    {
+        VRCPhysBoneBase physbone;
+
+        physbone = mirrorObject.GetComponent<VRCPhysBoneBase>();
+
+        //--we only create component if we did not found it
+        if (!physbone)
+        {
+            physbone = mirrorObject.AddComponent<VRC.SDK3.Dynamics.PhysBone.Components.VRCPhysBone>();
+        }
+
+        physbone.allowCollision = selectedVRCObject.physBone.allowCollision;
+        physbone.allowGrabbing = selectedVRCObject.physBone.allowGrabbing;
+        physbone.allowPosing = selectedVRCObject.physBone.allowPosing;
+
+        physbone.radius = selectedVRCObject.physBone.radius;
+        physbone.radiusCurve = selectedVRCObject.physBone.radiusCurve;
+    }
+
 
     void CreateOrTransferMirrorContactData()
     {

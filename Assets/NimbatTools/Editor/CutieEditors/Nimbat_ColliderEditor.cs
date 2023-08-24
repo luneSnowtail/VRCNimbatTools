@@ -108,6 +108,11 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
             return;
         }
 
+        if(activeCollider.shapeType == VRCPhysBoneColliderBase.ShapeType.Plane)
+        {
+            return;
+        }
+
         Handles.Label(Vector3.zero, string.Empty);
 
         EditorGUI.BeginChangeCheck();
@@ -157,10 +162,10 @@ public class Nimbat_ColliderEditor : NimbatCutieInspectorWindow
         }
 
         if (toggleHeightHandle)
-        {
-            capsuleDirection = selectedVRCObject.rotationFinal * Vector3.up;
-            handlesPosition = selectedVRCObject.positionFinal + ((capsuleDirection * (activeCollider.height / 2)) * selectedVRCObject.absoluteScale);
-            newPosition = Handles.Slider(handlesPosition, capsuleDirection, .03f, Handles.ConeHandleCap, 0);
+        {            
+            capsuleDirection = Vector3.Normalize( selectedVRCObject.rotationFinal * Vector3.up);
+            handlesPosition = selectedVRCObject.positionFinal + ((capsuleDirection.normalized * (activeCollider.height / 2)) * selectedVRCObject.absoluteScale);
+            newPosition = Handles.Slider(handlesPosition, capsuleDirection);
 
             float distance = Vector3.Distance(selectedVRCObject.positionFinal, newPosition);
 

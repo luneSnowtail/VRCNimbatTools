@@ -38,17 +38,17 @@ public class NimbatTangent
             return Quaternion.Euler(angleDeg, 0, 0) * Vector3.right;
         }
     }
-    
+
 }
 
 public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
 {
-    static VRCPhysBoneBase activePhysbone;    
-    
-    static int selectedKeyID;                 
-    
+    static VRCPhysBoneBase activePhysbone;
+
+    static int selectedKeyID;
+
     static Keyframe selectedKeyOriginalData;
-    
+
 
     static Quaternion rotation = Quaternion.identity;
 
@@ -64,7 +64,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
     {
         get
         {
-            if(activePhysbone)
+            if (activePhysbone)
                 return activePhysbone.radius;
 
             return 0;
@@ -98,7 +98,8 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
     float iterations = 15;
 
     //--main options
-    bool enableTool = false;
+    static string[] options = new string[] {"disabled", "radius" , "radius curve"};    
+    int selectedOption;
 
     #region ======================================== Constructor and destructor
 
@@ -107,7 +108,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
         title = "Physbone";
         drawModes = CutieInspectorDrawModes.DropUp;
         width = NimbatData.settingsWindowsWidth;
-        height = 150;        
+        height = 90;        
 
         Nimbat_SelectionData.OnSelectionChanged += OnSelectionChanged;
     }
@@ -154,6 +155,8 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
     {
         GUILayout.Label("Physbone controls still in alpha", EditorStyles.miniLabel);
 
+        GUILayout.Label("Hold CTRL and click in the center of the circle to select a radius curve point", EditorStyles.wordWrappedMiniLabel);
+
         if (!activePhysbone)
         {
             return;
@@ -165,7 +168,19 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
             return;
         }
 
-        enableTool = GUILayout.Toggle(enableTool, "enable physbone handles", EditorStyles.miniButton);
+        GUILayout.BeginHorizontal();
+
+        
+        selectedOption = GUILayout.Toolbar(selectedOption,options);
+        
+
+        GUILayout.EndHorizontal();
+
+
+        if(selectedOption != 2)
+        {
+            GUI.enabled = false;
+        }
 
         GUILayout.BeginHorizontal();
         if(GUILayout.Button("Add curve point"))
@@ -189,6 +204,8 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
             activePhysbone.radiusCurve.RemoveKey(selectedKeyID);
             SelectKeyframe(0);
         }
+
+        GUI.enabled = true;
     }
 
     public override void CutieInspectorHandles()
@@ -212,12 +229,25 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
 
         NimbatPhysBoneDrawer.DrawDebugDistanceLabels();
 
-        Handles.color = Color.green;
-        DrawPhysboneRadiusCurve();
+        switch (selectedOption)
+        {
+            case 0:
+                break;
+            case 1:
 
-        DrawRadiusKeys();
+                DrawEditRadiusHandle();
+                break;
+            case 2:
+                Handles.color = Color.green;
 
-        DrawEditKeyHandles();
+                DrawPhysboneRadiusCurve();
+                DrawRadiusKeys();
+                DrawEditKeyHandles();
+
+                break;
+
+        }
+       
 
         #region === OLD CODE
 
@@ -331,6 +361,7 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
 
         startTime = selectedKeyOriginalData.time;*/
     }
+
 
     void DrawRadiusKeys()
     {
@@ -467,8 +498,6 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
 
     }
 
-
-    #region =========== OLD CODE
     void DrawEditRadiusHandle()
     {
         float absoluteScale = NimbatPhysBoneDrawer.GetAbsoluteScale(0);
@@ -478,6 +507,8 @@ public class Nimbat_PhysboneEditor : NimbatCutieInspectorWindow
         activePhysbone.radius = (newRadius / absoluteScale);
     }
 
+
+    #region =========== OLD CODE
 
     void DrawKeyEditHandles()
     {        

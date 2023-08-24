@@ -9,13 +9,16 @@ public class Nimbat_About : NimbatCutieInspectorWindow
     {
         title = "About";
         width = NimbatData.inspectorWindowsWidth;
-        height = 200;
+        height = 310;
 
         mainButtonIconPath = "Button_about";
     }
 
     public override void CutieInspectorContent()
     {
+
+        GUILayout.Label("Nimbat tools Alpha v0.04");
+        GUILayout.Label("I still expect this tool to have many bugs but please help me report them at discord or git website, thanks for helping me make this tool better",EditorStyles.wordWrappedMiniLabel);
 
         GUILayout.Label("Even when this tool is and will always be free, you can still support me at patreon", EditorStyles.wordWrappedLabel);
 
@@ -45,14 +48,23 @@ public class Nimbat_About : NimbatCutieInspectorWindow
 
         GUILayout.EndHorizontal();
 
-        GUILayout.BeginVertical();
+        GUILayout.BeginVertical();        
+        GUILayout.Label("");
+
         GUILayout.Label("Special thanks to the cute beans:");
 
-        GUILayout.Label("Hikari for being a wonderful cutie" , EditorStyles.wordWrappedMiniLabel);
-        GUILayout.Label("Twikle_Sparlight for their awesome friendship and support", EditorStyles.wordWrappedMiniLabel);
-        GUILayout.Label("Sylv for doing the nimbat >=(", EditorStyles.wordWrappedMiniLabel);
-        GUILayout.Label("Masho for all their crimes on twitch D=", EditorStyles.wordWrappedMiniLabel);
-        GUILayout.Label("Kitsunai for releasing all the awoos!!", EditorStyles.wordWrappedMiniLabel);
+        string seanNia = "Sean and Nia for their love and for being special ";
+        string hikari = "Hikari, for their awesome support ";
+        string twinkle = "Twikle_Sparlight for their friendship and support ";
+        string masho = "Masho for all their crimes on twitch D= ";
+        string sylv = "Sylv for doing the nimbat >=( ";
+        string kitsunai = "Kitsunai for releasing all the awoos!! and their help with testing ";
+        string dan = "Dan for their dino advices and for surviving the hurriquake ";
+        string nul = "Nul for the code review and advices ";
+
+        string composedString = string.Concat(seanNia, hikari, twinkle, masho, kitsunai, dan, nul, sylv);
+
+        GUILayout.Label(composedString, EditorStyles.wordWrappedMiniLabel);
 
         GUILayout.EndVertical();
     }

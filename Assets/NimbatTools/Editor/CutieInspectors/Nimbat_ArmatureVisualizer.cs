@@ -12,7 +12,7 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
     {
         title = "Armature Visualizer";
         width = NimbatData.inspectorWindowsWidth;
-        height = 60;
+        height = 80;
         
         mainButtonIconPath = "Button_armature";
 
@@ -39,7 +39,9 @@ public class Nimbat_ArmatureVisualizer : NimbatCutieInspectorWindow
     public override void CutieInspectorContent()
     {
         GUILayout.Label("BETA");
-        GUILayout.Label("future version will contain group buttons");        
+        GUILayout.Label("future version will contain group buttons", EditorStyles.miniLabel);
+
+        GUILayout.Label("Hold CTRL and click at the start of the bone to select the gameobject",EditorStyles.wordWrappedLabel);
     }
 
     public override void CutieInspectorHandles()

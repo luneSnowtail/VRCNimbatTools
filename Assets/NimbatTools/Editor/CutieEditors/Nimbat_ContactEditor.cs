@@ -154,7 +154,6 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 
                 selectedVRCObject.rotationOffset = finalRotation.normalized;
             }
-
         }
         else
         {
@@ -163,13 +162,13 @@ public class Nimbat_ContactEditor : NimbatCutieInspectorWindow
 
         if(toggleHeightHandle)
         {
-            capsuleDirection = selectedVRCObject.rotationFinal * Vector3.up;
-            handlesPosition = selectedVRCObject.positionFinal + ((capsuleDirection * (activeContact.height / 2)) * selectedVRCObject.absoluteScale);
-            newPosition = Handles.Slider(handlesPosition, capsuleDirection, .03f ,Handles.ConeHandleCap,0);
+            capsuleDirection = Vector3.Normalize(selectedVRCObject.rotationFinal * Vector3.up);
+            handlesPosition = selectedVRCObject.positionFinal + ((capsuleDirection.normalized * (activeContact.height / 2)) * selectedVRCObject.absoluteScale);
+            newPosition = Handles.Slider(handlesPosition, capsuleDirection);
 
             float distance = Vector3.Distance(selectedVRCObject.positionFinal, newPosition);
 
-            activeContact.height = (distance*2) / selectedVRCObject.absoluteScale;
+            activeContact.height = (distance*2) / selectedVRCObject.absoluteScale;            
         }
 
     }

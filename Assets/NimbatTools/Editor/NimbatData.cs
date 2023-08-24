@@ -231,15 +231,18 @@ public struct NimbatVRCObjectBase
             Quaternion transformRotation;
             Quaternion vrcObjectRotation;
 
+            Quaternion finalRotation;
+
             switch (vrcObjectType)
             {
                 case VRCObjectType.Contact:
                     transformRotation = _contact.transform.rotation;
                     vrcObjectRotation = _contact.rotation;
 
-                    return transformRotation * vrcObjectRotation;
+                    finalRotation = transformRotation * vrcObjectRotation;
 
-                    
+                    return finalRotation.normalized;
+
                 case VRCObjectType.PhysBone:
                     transformRotation = _physBone.transform.rotation;
 
@@ -249,7 +252,9 @@ public struct NimbatVRCObjectBase
                     transformRotation = _collider.transform.rotation;
                     vrcObjectRotation = _collider.rotation;
 
-                    return transformRotation * vrcObjectRotation;
+                    finalRotation = transformRotation * vrcObjectRotation;
+
+                    return finalRotation.normalized;
             }
 
             return Quaternion.identity;
@@ -550,8 +555,9 @@ public struct NimbatPhysBoneCurvePoint
             return position - directionScaled;
         }
     }
-
 }
+
+
 public struct NimbatBone
 {
     public Transform boneStart;

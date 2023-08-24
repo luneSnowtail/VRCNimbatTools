@@ -37,7 +37,7 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
     {
         title = "VRC Mirror Groups";
         width = NimbatData.inspectorWindowsWidth;
-        height = 250;
+        height = 270;
 
         buttonIcon_visible = (Texture2D) Resources.Load("object_visible");
         buttonIcon_NotVisible = (Texture2D)Resources.Load("object_noVisible");
@@ -66,6 +66,8 @@ public class Nimbat_VRCMirrorGroups : NimbatCutieInspectorWindow
 
     public override void CutieInspectorContent()
     {
+        GUILayout.Label("Hold CTRL and click on the center of an object to select it", EditorStyles.wordWrappedLabel);
+
         GUILayout.BeginHorizontal();
 
         tabPhysbones = GUILayout.Toggle(tabPhysbones, "Physbones", EditorStyles.toolbarButton);

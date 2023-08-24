@@ -353,7 +353,16 @@ public class NimbatFunctions
                 return childs[i].transform;
         }
 
-        return GameObject.Find(name).transform;
+        try
+        {
+            Transform childFound = GameObject.Find(name).transform;
+            return childFound;
+        }
+        catch
+        {
+            return null;
+        }
+        
     }
 
 

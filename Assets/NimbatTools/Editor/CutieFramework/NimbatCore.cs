@@ -177,6 +177,9 @@ public class NimbatCore : EditorWindow
     /// </summary>
     static void SceneViewGUI()
     {
+        nimbatRect.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 80, SceneView.lastActiveSceneView.camera.pixelHeight - 80, 80, 80);
+        GUI.DrawTexture(nimbatRect, nimbatIcon);
+
         totalButtons = 0;
 
         //--this is the part that draws the main buttons and their cutie inspectors if enabled
@@ -185,8 +188,6 @@ public class NimbatCore : EditorWindow
         //--if selection is compatible, we draw the additional settings here
         DrawCutieSettings();
 
-        nimbatRect.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 80, SceneView.lastActiveSceneView.camera.pixelHeight - 80, 80, 80);
-        GUI.DrawTexture(nimbatRect, nimbatIcon);
 
 
     }

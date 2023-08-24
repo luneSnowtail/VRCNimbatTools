@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class Nimbat_Settings : NimbatCutieInspectorWindow
 {
@@ -8,7 +9,7 @@ public class Nimbat_Settings : NimbatCutieInspectorWindow
     {
         title = "Settings";
         width = NimbatData.inspectorWindowsWidth;
-        height = 150;
+        height = 70;
         mainButtonIconPath = "Button_settings";
     }
 
@@ -17,7 +18,11 @@ public class Nimbat_Settings : NimbatCutieInspectorWindow
 
     public override void CutieInspectorContent()
     {
+        GUILayout.Label("Alpha version");
+        GUILayout.Label("settings have been moved to their own place in the cutie inspector windows in the bottom right when an object is selected", EditorStyles.wordWrappedMiniLabel); 
+
+        /*
         enableMirrorMode = GUILayout.Toggle(enableMirrorMode, "Highlight mirror object on selection");
-        holdControlToSelect = GUILayout.Toggle(holdControlToSelect, "Hold Ctrl to select vrc Object");
+        holdControlToSelect = GUILayout.Toggle(holdControlToSelect, "Hold Ctrl to select vrc Object");*/
     }
 }

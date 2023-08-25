@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  packageName: "com.vrchat.demo-template"
+  packageName: "com.lunesnowtail.vrc-nimbat-tools"
 
 permissions:
   contents: write

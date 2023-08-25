@@ -135,22 +135,41 @@ public struct NimbatVRCObjectBase
             switch (vrcObjectType)
             {
                 case VRCObjectType.Contact:
-                    if(_contact)
-                        return _contact.transform.position + _contact.transform.TransformDirection(_contact.position * absoluteScale);
+                    if (_contact)
+                    {
+                        if (_contact.rootTransform)
+                        {
+                            return position + _contact.rootTransform.TransformDirection(_contact.position * absoluteScale);
+                        }
+                        else
+                        {
+                            return position + _contact.transform.TransformDirection(_contact.position * absoluteScale);
+                        }
+                    }
                     break;
                 case VRCObjectType.PhysBone:
                     if (_physBone)
                     {
                         if (_physBone.rootTransform)
-                    {
-                        return _physBone.rootTransform.position;
-                    }
+                        {
+                            return _physBone.rootTransform.position;
+                        }
                         return _physBone.transform.position;
                     }
                     break;
                 case VRCObjectType.Collider:
-                    if(_collider)
-                        return _collider.transform.position + _collider.transform.TransformDirection(_collider.position * absoluteScale);
+                    if (_collider)
+                    {
+                        if (_collider.rootTransform)
+                        {
+                            return position + _collider.rootTransform.TransformDirection(_collider.position * absoluteScale);
+                        }
+                        else
+                        {
+                            return position + _collider.transform.TransformDirection(_collider.position * absoluteScale);
+                        }
+
+                    }
                     break;
             }
             if(gameObject)
@@ -166,7 +185,14 @@ public struct NimbatVRCObjectBase
             switch (vrcObjectType)
             {
                 case VRCObjectType.Contact:
-                    return _contact.transform.position;
+                    if (_contact.rootTransform)
+                    {
+                        return _contact.rootTransform.position;
+                    }
+                    else
+                    {
+                        return _contact.transform.position;
+                    }
                 case VRCObjectType.PhysBone:
                     if (_physBone.rootTransform)
                     {
@@ -174,7 +200,14 @@ public struct NimbatVRCObjectBase
                     }
                     return _physBone.transform.position;
                 case VRCObjectType.Collider:
-                    return _collider.transform.position;
+                    if (_collider.rootTransform)
+                    {
+                        return _collider.rootTransform.position;
+                    }
+                    else
+                    {
+                        return _collider.transform.position;
+                    }
             }
             if (gameObject)
                 return gameObject.transform.position;
@@ -236,10 +269,8 @@ public struct NimbatVRCObjectBase
             switch (vrcObjectType)
             {
                 case VRCObjectType.Contact:
-                    transformRotation = _contact.transform.rotation;
                     vrcObjectRotation = _contact.rotation;
-
-                    finalRotation = transformRotation * vrcObjectRotation;
+                    finalRotation = rotation * vrcObjectRotation;
 
                     return finalRotation.normalized;
 
@@ -249,10 +280,8 @@ public struct NimbatVRCObjectBase
                     return transformRotation;
 
                 case VRCObjectType.Collider:
-                    transformRotation = _collider.transform.rotation;
                     vrcObjectRotation = _collider.rotation;
-
-                    finalRotation = transformRotation * vrcObjectRotation;
+                    finalRotation = rotation * vrcObjectRotation;
 
                     return finalRotation.normalized;
             }
@@ -273,13 +302,27 @@ public struct NimbatVRCObjectBase
             switch (vrcObjectType)
             {
                 case VRCObjectType.Contact:
-                    transformRotation = _contact.transform.rotation;
+                    if (_contact.rootTransform)
+                    {
+                        transformRotation = _contact.rootTransform.rotation;
+                    }
+                    else
+                    {
+                        transformRotation = _contact.transform.rotation;
+                    }
                     return transformRotation;
                 case VRCObjectType.PhysBone:
                     transformRotation = _physBone.transform.rotation;
                     return transformRotation;
                 case VRCObjectType.Collider:
-                    transformRotation = _collider.transform.rotation;
+                    if (_collider.rootTransform)
+                    {
+                        transformRotation = _collider.rootTransform.rotation;
+                    }
+                    else
+                    {
+                        transformRotation = _collider.transform.rotation;
+                    }
                     return transformRotation;
             }
 
@@ -408,7 +451,42 @@ public struct NimbatVRCObjectBase
     /// <summary>
     /// returns the scale used by vrc sdk to keep this object consistent
     /// </summary>
-    public float absoluteScale;
+    /// 
+    float _absoluteScale;
+
+    public float absoluteScale
+    {
+        get
+        {
+            switch (vrcObjectType)
+            {
+                case VRCObjectType.Collider:
+                    if (_collider.rootTransform)
+                    {
+                        return NimbatFunctions.GetAbsoluteScale(_collider.rootTransform.gameObject);
+                    }
+                    else
+                    {
+                        return NimbatFunctions.GetAbsoluteScale(_collider.transform.gameObject);
+                    }
+                case VRCObjectType.Contact:
+                    if (_contact.rootTransform)
+                    {
+                        return NimbatFunctions.GetAbsoluteScale(_contact.rootTransform.gameObject);
+                    }
+                    else
+                    {
+                        return NimbatFunctions.GetAbsoluteScale(_contact.transform.gameObject);
+                    }
+            }
+
+            return _absoluteScale;
+        }
+        set
+        {
+            _absoluteScale = value;
+        }
+    }
 
     private GameObject _gameObject;
     public GameObject gameObject

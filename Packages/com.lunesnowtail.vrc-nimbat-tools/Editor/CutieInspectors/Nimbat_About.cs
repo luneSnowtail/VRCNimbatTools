@@ -17,7 +17,7 @@ public class Nimbat_About : NimbatCutieInspectorWindow
     public override void CutieInspectorContent()
     {
 
-        GUILayout.Label("Nimbat tools Alpha v0.04");
+        GUILayout.Label("Nimbat tools Alpha v0.5");
         GUILayout.Label("I still expect this tool to have many bugs but please help me report them at discord or git website, thanks for helping me make this tool better",EditorStyles.wordWrappedMiniLabel);
 
         GUILayout.Label("Even when this tool is and will always be free, you can still support me at patreon", EditorStyles.wordWrappedLabel);
@@ -67,8 +67,9 @@ public class Nimbat_About : NimbatCutieInspectorWindow
         string kitsunai = "Kitsunai for releasing all the awoos!! and their help with testing ";
         string dan = "Dan for their dino advices and for surviving the hurriquake ";
         string nul = "Nul for the code review and advices ";
+        string apois = "Apois for hardcore testing ";
 
-        string composedString = string.Concat(seanNia, hikari, twinkle, masho, kitsunai, dan, nul, sylv);
+        string composedString = string.Concat(seanNia, hikari, twinkle, masho, kitsunai, dan, nul, apois, sylv);
 
         GUILayout.Label(composedString, EditorStyles.wordWrappedMiniLabel);
 

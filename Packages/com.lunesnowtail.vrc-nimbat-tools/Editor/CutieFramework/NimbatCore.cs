@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-
 /// <summary>
 /// This class is in charge of drawing the main menu in the scene view
 /// the content of each button and menu box will be drawn by other classes

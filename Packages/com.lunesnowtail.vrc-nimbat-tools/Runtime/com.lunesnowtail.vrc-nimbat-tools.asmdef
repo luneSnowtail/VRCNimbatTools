@@ -1,15 +1,18 @@
 {
-  "name": "com.lunesnowtail.vrc-nimbat-tools",
-  "references": [
-    "VRC.SDK3A",
-    "VRC.SDKBase"
-  ],
-  "includePlatforms": [],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "autoReferenced": true,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "defineConstraints": [],
-  "optionalUnityReferences": []
+    "name": "com.lunesnowtail.vrc-nimbat-tools",
+    "references": [
+        "VRC.SDK3A",
+        "VRC.SDKBase"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

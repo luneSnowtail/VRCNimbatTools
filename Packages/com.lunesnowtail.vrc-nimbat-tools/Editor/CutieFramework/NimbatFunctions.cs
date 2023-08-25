@@ -202,6 +202,11 @@ public class NimbatFunctions
             return MirrorTypes.Right;
         }
 
+        if(objectName.Length <= 2)
+        {
+            return MirrorTypes.None;
+        }
+
         //--check for _L or _R
         string suffix = objectName.Substring(objectName.Length - 2);
 

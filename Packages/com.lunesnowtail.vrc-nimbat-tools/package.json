@@ -1,9 +1,8 @@
 {
   "name": "com.lunesnowtail.vrc-nimbat-tools",
-  "displayName": "com.lunesnowtail.vrc-nimbat-tools",
-  "version": "0.0.1",
-  "description": "Describe this Package",
-  "dependencies": {},
+  "displayName": "VRC Nimbat Tools - Alpha v0.4",
+  "version": "0.4.0",
+  "description": "VRC Nimbat Tools adds visual editors to most vrc component allowing them to be edited directly in the viewport.",
   "gitDependencies": {},
   "vpmDependencies": {
     "com.vrchat.avatars": "3.2.3"
@@ -15,5 +14,6 @@
   },
   "legacyFolders": {},
   "legacyFiles": {},
-  "localPath": "G:\\VR Chat Stuff\\VRCNimbatTools\\Packages\\com.lunesnowtail.vrc-nimbat-tools"
+  "localPath": "G:\\VR Chat Stuff\\VRCNimbatTools\\Packages\\com.lunesnowtail.vrc-nimbat-tools",
+  "type": "tool"
 }

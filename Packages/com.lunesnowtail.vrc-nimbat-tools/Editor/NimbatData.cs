@@ -3,6 +3,35 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+public struct MirrorNameRule
+{
+    public MirrorNameRule(CaseModes mode, RuleTypes rule, string left, string right)
+    {
+        caseMode = mode;
+        ruleType = rule;
+        leftName = left;
+        rightName = right;
+    }
+
+    public enum CaseModes
+    {
+        CaseSensitive,
+        NonCaseSensitive,
+    }
+
+    public enum RuleTypes
+    {
+        Contains,
+        AtEnd,
+    }
+
+    public CaseModes caseMode;
+    public RuleTypes ruleType;
+
+    public string leftName;
+    public string rightName;
+}
+
 
 public class NimbatData
 {

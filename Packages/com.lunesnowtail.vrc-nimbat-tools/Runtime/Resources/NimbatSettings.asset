@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 587d65ccd80f2224e9acdd9405022e39, type: 3}
   m_Name: NimbatSettings
   m_EditorClassIdentifier: 
+  mirrorRules: []

@@ -177,7 +177,9 @@ public class NimbatCore : EditorWindow
     static void SceneViewGUI()
     {
         nimbatRect.Set(SceneView.lastActiveSceneView.camera.pixelWidth - 80, SceneView.lastActiveSceneView.camera.pixelHeight - 80, 80, 80);
-        GUI.DrawTexture(nimbatRect, nimbatIcon);
+
+        if(nimbatIcon)
+            GUI.DrawTexture(nimbatRect, nimbatIcon);
 
         totalButtons = 0;
 

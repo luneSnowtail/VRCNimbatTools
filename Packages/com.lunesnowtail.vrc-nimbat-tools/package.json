@@ -1,9 +1,7 @@
 {
   "name": "com.lunesnowtail.vrc-nimbat-tools",
   "displayName": "VRC Nimbat Tools - Alpha",
-
-  "version": "0.5.2",
-
+  "version": "0.5.3",
   "description": "VRC Nimbat Tools adds visual editors to most vrc component allowing them to be edited directly in the viewport.",
   "gitDependencies": {},
   "vpmDependencies": {

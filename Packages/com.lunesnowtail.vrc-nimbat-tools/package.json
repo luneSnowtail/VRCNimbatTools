@@ -5,7 +5,7 @@
   "description": "VRC Nimbat Tools adds visual editors to most vrc component allowing them to be edited directly in the viewport.",
   "gitDependencies": {},
   "vpmDependencies": {
-    "com.vrchat.avatars": "3.4.1"
+    "com.vrchat.avatars": "3.4.2"
   },
   "author": {
     "name": "Lune snowtail",

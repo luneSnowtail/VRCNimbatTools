@@ -1,18 +1,18 @@
 {
   "dependencies": {
     "com.vrchat.avatars": {
-      "version": "3.x"
+      "version": "3.8.x"
     }
   },
   "locked": {
     "com.vrchat.avatars": {
-      "version": "3.x",
+      "version": "3.8.x",
       "dependencies": {
-        "com.vrchat.base": "3.x"
+        "com.vrchat.base": "3.8.x"
       }
     },
     "com.vrchat.base": {
-      "version": "3.x",
+      "version": "3.8.x",
       "dependencies": {}
     }
   }

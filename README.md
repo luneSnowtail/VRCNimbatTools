@@ -3,6 +3,6 @@ VRC Nimbat tools is an Unity plugin that adds Handlers and visual editors to mos
 
 this tool is still in alpha and i will be working on it on my free times between each avatar release.
 
-
+visit https://lunesnowtail.github.io/VRCNimbatTools/ to add to VRC Creator Companion
 
 
